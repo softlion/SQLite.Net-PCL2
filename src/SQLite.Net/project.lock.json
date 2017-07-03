@@ -1,5 +1,4 @@
 {
-  "locked": false,
   "version": 2,
   "targets": {
     ".NETStandard,Version=v1.1": {
@@ -2645,5 +2644,8 @@
     ".NETStandard,Version=v1.1": []
   },
   "tools": {},
-  "projectFileToolGroups": {}
+  "projectFileToolGroups": {},
+  "packageFolders": {
+    "C:\\Users\\benja\\.nuget\\packages\\": {}
+  }
 }
