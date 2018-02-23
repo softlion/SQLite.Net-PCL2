@@ -1,4 +1,4 @@
-set version=200.0.4
+set version=200.0.5
 
 
 mkdir SQLite.Net
@@ -13,6 +13,9 @@ copy /y ..\src\SQLite.Net.Platform.Generic\bin\Release\SQLite.Net.Platform.Gener
 
 mkdir SQLite.Net.Platform.Win32
 copy /y ..\src\SQLite.Net.Platform.Win32\bin\Release\SQLite.Net.Platform.Win32.dll SQLite.Net.Platform.Win32
+
+mkdir SQLite.Net.Platform.NetCore
+copy /y ..\src\SQLite.Net.Platform.NetCore\bin\Release\netcoreapp2.0\SQLite.Net.Platform.NetCore.dll SQLite.Net.Platform.NetCore
 
 mkdir SQLite.Net.Platform.WindowsPhone8
 mkdir SQLite.Net.Platform.WindowsPhone8\ARM

@@ -18,15 +18,18 @@
                 <dependency id="sqlite-net-wp8" version="3.8.5"/>
             </group>-->
           <group targetFramework="Xamarin.iOS">
-            <dependency id="SQLitePCLRaw.bundle_e_sqlite3" version="1.1.1" />
+            <dependency id="SQLitePCLRaw.bundle_e_sqlite3" version="1.1.9" />
           </group>
           <group targetFramework="MonoAndroid">
-            <dependency id="SQLitePCLRaw.bundle_e_sqlite3" version="1.1.1" />
+            <dependency id="SQLitePCLRaw.bundle_e_sqlite3" version="1.1.9" />
+          </group>
+          <group targetFramework="netcore2">
+            <dependency id="SQLitePCLRaw.bundle_e_sqlite3" version="1.1.9" />
           </group>
 
           <group targetFramework="net45">
             <dependency id="SQLite.Native" version="3.12.3" />
-            <dependency id="System.Data.SQLite.Core" version="1.0.103" />
+            <dependency id="System.Data.SQLite.Core" version="1.0.107" />
           </group>
 
         </dependencies>
@@ -57,6 +60,10 @@
         <!-- Win32 -->
         <file src="SQLite.Net.Platform.Win32\SQLite.Net.Platform.Win32.dll" target="lib\net4\SQLite.Net.Platform.Win32.dll" />
         <file src="SQLite.Net\SQLite.Net.dll" target="lib\net4\SQLite.Net.dll" />
+
+        <!-- NetCore2 -->
+        <file src="SQLite.Net.Platform.NetCore\SQLite.Net.Platform.NetCore.dll" target="lib\netcore2\SQLite.Net.Platform.NetCore.dll" />
+        <file src="SQLite.Net\SQLite.Net.dll" target="lib\netcore2\SQLite.Net.dll" />
 
         <!-- Generic -->
         <file src="SQLite.Net.Platform.Generic\SQLite.Net.Platform.Generic.dll" target="lib\net40\SQLite.Net.Platform.Generic.dll"/>

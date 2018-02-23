@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.27130.2036
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Platforms", "Platforms", "{59584026-7610-4CD5-A74E-D2B0A2E1CE87}"
 EndProject
@@ -52,6 +52,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SQLite.Net.Async", "src\SQLite.Net.Async\SQLite.Net.Async.csproj", "{3AB34E91-8E1A-442F-8E66-2494B371A890}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SQLite.Net", "src\SQLite.Net\SQLite.Net.csproj", "{B1E79B3E-BD38-4983-8521-A0F137374CC6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SQLite.Net.Platform.NetCore", "src\SQLite.Net.Platform.NetCore\SQLite.Net.Platform.NetCore.csproj", "{55545FAB-9C8F-4901-995B-0DDE208F6A54}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -369,6 +371,26 @@ Global
 		{B1E79B3E-BD38-4983-8521-A0F137374CC6}.Release|x64.Build.0 = Release|Any CPU
 		{B1E79B3E-BD38-4983-8521-A0F137374CC6}.Release|x86.ActiveCfg = Release|Any CPU
 		{B1E79B3E-BD38-4983-8521-A0F137374CC6}.Release|x86.Build.0 = Release|Any CPU
+		{55545FAB-9C8F-4901-995B-0DDE208F6A54}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{55545FAB-9C8F-4901-995B-0DDE208F6A54}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{55545FAB-9C8F-4901-995B-0DDE208F6A54}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{55545FAB-9C8F-4901-995B-0DDE208F6A54}.Debug|ARM.Build.0 = Debug|Any CPU
+		{55545FAB-9C8F-4901-995B-0DDE208F6A54}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{55545FAB-9C8F-4901-995B-0DDE208F6A54}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{55545FAB-9C8F-4901-995B-0DDE208F6A54}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{55545FAB-9C8F-4901-995B-0DDE208F6A54}.Debug|x64.Build.0 = Debug|Any CPU
+		{55545FAB-9C8F-4901-995B-0DDE208F6A54}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{55545FAB-9C8F-4901-995B-0DDE208F6A54}.Debug|x86.Build.0 = Debug|Any CPU
+		{55545FAB-9C8F-4901-995B-0DDE208F6A54}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{55545FAB-9C8F-4901-995B-0DDE208F6A54}.Release|Any CPU.Build.0 = Release|Any CPU
+		{55545FAB-9C8F-4901-995B-0DDE208F6A54}.Release|ARM.ActiveCfg = Release|Any CPU
+		{55545FAB-9C8F-4901-995B-0DDE208F6A54}.Release|ARM.Build.0 = Release|Any CPU
+		{55545FAB-9C8F-4901-995B-0DDE208F6A54}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{55545FAB-9C8F-4901-995B-0DDE208F6A54}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{55545FAB-9C8F-4901-995B-0DDE208F6A54}.Release|x64.ActiveCfg = Release|Any CPU
+		{55545FAB-9C8F-4901-995B-0DDE208F6A54}.Release|x64.Build.0 = Release|Any CPU
+		{55545FAB-9C8F-4901-995B-0DDE208F6A54}.Release|x86.ActiveCfg = Release|Any CPU
+		{55545FAB-9C8F-4901-995B-0DDE208F6A54}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -388,5 +410,9 @@ Global
 		{46DF3E43-6B65-4C3D-8911-64FCC301040F} = {0C4021EF-617B-4620-ADD3-A702B4F9FA86}
 		{0A947CD1-3C6F-415A-A122-233BAE3005FD} = {0C4021EF-617B-4620-ADD3-A702B4F9FA86}
 		{9E5D6B89-B69B-486B-9F7B-406BE8690589} = {49C7015B-F41A-47A6-8200-B925902E74E9}
+		{55545FAB-9C8F-4901-995B-0DDE208F6A54} = {59584026-7610-4CD5-A74E-D2B0A2E1CE87}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {ED68D56C-F9AF-45E9-9609-E8CABC16A3E2}
 	EndGlobalSection
 EndGlobal

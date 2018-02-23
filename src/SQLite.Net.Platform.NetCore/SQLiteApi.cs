@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using SQLite.Net.Interop;
 using SQLitePCL;
 
-namespace SQLite.Net.Platform.XamarinAndroid
+namespace SQLite.Net.Platform.NetCore
 {
-    public class SQLiteApiAndroid : ISQLiteApiExt
+    public class SQLiteApi : ISQLiteApiExt
     {
         public Result Open(string filename, out IDbHandle db, int flags, string zvfs)
         {
