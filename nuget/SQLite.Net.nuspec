@@ -23,7 +23,7 @@
           <group targetFramework="MonoAndroid">
             <dependency id="SQLitePCLRaw.bundle_e_sqlite3" version="1.1.9" />
           </group>
-          <group targetFramework="netcore2">
+          <group targetFramework="netcoreapp2.0">
             <dependency id="SQLitePCLRaw.bundle_e_sqlite3" version="1.1.9" />
           </group>
 
@@ -62,8 +62,8 @@
         <file src="SQLite.Net\SQLite.Net.dll" target="lib\net4\SQLite.Net.dll" />
 
         <!-- NetCore2 -->
-        <file src="SQLite.Net.Platform.NetCore\SQLite.Net.Platform.NetCore.dll" target="lib\netcore2\SQLite.Net.Platform.NetCore.dll" />
-        <file src="SQLite.Net\SQLite.Net.dll" target="lib\netcore2\SQLite.Net.dll" />
+        <file src="SQLite.Net.Platform.NetCore\SQLite.Net.Platform.NetCore.dll" target="lib\netcoreapp2.0\SQLite.Net.Platform.NetCore.dll" />
+        <file src="SQLite.Net\SQLite.Net.dll" target="lib\netcoreapp2.0\SQLite.Net.dll" />
 
         <!-- Generic -->
         <file src="SQLite.Net.Platform.Generic\SQLite.Net.Platform.Generic.dll" target="lib\net40\SQLite.Net.Platform.Generic.dll"/>

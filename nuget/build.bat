@@ -1,4 +1,4 @@
-set version=200.0.5
+set version=200.0.6
 
 
 mkdir SQLite.Net
