@@ -61,8 +61,10 @@
   </Target>
   -->
   <ItemGroup>
-    <Folder Include="i386\" />
-    <Folder Include="x86_64\" />
+    <ProjectReference Include="..\SQLite.Net\SQLite.Net.csproj">
+      <Project>{fe454822-5982-4327-ae8d-26819659dc9a}</Project>
+      <Name>SQLite.Net</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="i386\libsqlite3_for_net.dylib">
@@ -74,11 +76,5 @@
     <None Include="SQLite.Net.Platform.OSX.dll.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\SQLite.Net\SQLite.Net.csproj">
-      <Project>{4971D437-0694-4297-A8CC-146CE08C3BD9}</Project>
-      <Name>SQLite.Net</Name>
-    </ProjectReference>
   </ItemGroup>
 </Project>

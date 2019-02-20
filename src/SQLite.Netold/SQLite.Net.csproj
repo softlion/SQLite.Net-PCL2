@@ -1,0 +1,108 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <MinimumVisualStudioVersion>14.0</MinimumVisualStudioVersion>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{B1E79B3E-BD38-4983-8521-A0F137374CC6}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>SQLite.Net</RootNamespace>
+    <AssemblyName>SQLite.Net</AssemblyName>
+    <DefaultLanguage>en-US</DefaultLanguage>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
+    <TargetFrameworkVersion>v5.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;JETBRAINS_ANNOTATIONS</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="project.json" />
+    <!-- A reference to the entire .NET Framework is automatically included -->
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\GlobalAssemblyInfo.cs">
+      <Link>Properties\GlobalAssemblyInfo.cs</Link>
+    </Compile>
+    <Compile Include="ActiveInsertCommand.cs" />
+    <Compile Include="Annotations\JetBrains.cs" />
+    <Compile Include="Attributes\AutoIncrementAttribute.cs" />
+    <Compile Include="Attributes\CollationAttribute.cs" />
+    <Compile Include="Attributes\ColumnAttribute.cs" />
+    <Compile Include="Attributes\DefaultAttribute.cs" />
+    <Compile Include="Attributes\DefaultColumnInformationProvider.cs" />
+    <Compile Include="Attributes\IColumnInformationProvider.cs" />
+    <Compile Include="Attributes\IgnoreAttribute.cs" />
+    <Compile Include="Attributes\IndexedAttribute.cs" />
+    <Compile Include="Attributes\MaxLengthAttribute.cs" />
+    <Compile Include="Attributes\NotNullAttribute.cs" />
+    <Compile Include="Attributes\PrimaryKeyAttribute.cs" />
+    <Compile Include="Attributes\TableAttribute.cs" />
+    <Compile Include="Attributes\UniqueAttribute.cs" />
+    <Compile Include="BaseTableQuery.cs" />
+    <Compile Include="BlobSerializerDelegate.cs" />
+    <Compile Include="ContractResolver.cs" />
+    <Compile Include="CreateTablesResult.cs" />
+    <Compile Include="DebugTraceListener.cs" />
+    <Compile Include="IBlobSerializer.cs" />
+    <Compile Include="IContractResolver.cs" />
+    <Compile Include="Interop\ColType.cs" />
+    <Compile Include="Interop\ConfigOption.cs" />
+    <Compile Include="Interop\CreateFlags.cs" />
+    <Compile Include="Interop\ExtendedResult.cs" />
+    <Compile Include="Interop\IDbBackupHandle.cs" />
+    <Compile Include="Interop\IDbHandle.cs" />
+    <Compile Include="Interop\IDbStatement.cs" />
+    <Compile Include="Interop\IReflectionService.cs" />
+    <Compile Include="Interop\ISQLiteApi.cs" />
+    <Compile Include="Interop\ISQLiteApiExt.cs" />
+    <Compile Include="Interop\ISQLitePlatform.cs" />
+    <Compile Include="Interop\IStopwatch.cs" />
+    <Compile Include="Interop\IStopwatchFactory.cs" />
+    <Compile Include="Interop\IVolatileService.cs" />
+    <Compile Include="Interop\Result.cs" />
+    <Compile Include="Interop\SQLite3.cs" />
+    <Compile Include="Interop\SQLiteOpenFlags.cs" />
+    <Compile Include="ISerializable.cs" />
+    <Compile Include="ITraceListener.cs" />
+    <Compile Include="NotNullConstraintViolationException.cs" />
+    <Compile Include="Orm.cs" />
+    <Compile Include="PreparedSqlLiteInsertCommand.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SQLiteCommand.cs" />
+    <Compile Include="SQLiteConnection.cs" />
+    <Compile Include="SQLiteConnectionPool.cs" />
+    <Compile Include="SQLiteConnectionString.cs" />
+    <Compile Include="SQLiteConnectionWithLock.cs" />
+    <Compile Include="SQLiteException.cs" />
+    <Compile Include="TableMapping.cs" />
+    <Compile Include="TableQuery.cs" />
+    <Compile Include="TraceListenerExtensions.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

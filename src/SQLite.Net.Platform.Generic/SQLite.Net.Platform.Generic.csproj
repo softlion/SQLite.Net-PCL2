@@ -45,11 +45,11 @@
     <Compile Include="StopwatchFactoryGeneric.cs" />
     <Compile Include="VolatileServiceGeneric.cs" />
   </ItemGroup>
-  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
     <ProjectReference Include="..\SQLite.Net\SQLite.Net.csproj">
-      <Project>{4971D437-0694-4297-A8CC-146CE08C3BD9}</Project>
+      <Project>{fe454822-5982-4327-ae8d-26819659dc9a}</Project>
       <Name>SQLite.Net</Name>
     </ProjectReference>
   </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>
