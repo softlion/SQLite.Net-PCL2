@@ -30,7 +30,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Xml.Linq;
-using JetBrains.Annotations;
 using SQLite.Net.Attributes;
 using NotNullAttribute = SQLite.Net.Attributes.NotNullAttribute;
 
@@ -155,13 +154,11 @@ namespace SQLite.Net
 			return ColumnInformationProvider.GetIndices (p);
         }
 
-        [CanBeNull]
         internal static int? MaxStringLength(PropertyInfo p)
         {
 			return ColumnInformationProvider.MaxStringLength (p);
         }
 
-        [CanBeNull]
         internal static object GetDefaultValue(PropertyInfo p)
         {
 			return ColumnInformationProvider.GetDefaultValue (p);

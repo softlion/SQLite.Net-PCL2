@@ -20,11 +20,8 @@
 // THE SOFTWARE.
 //
 
-using JetBrains.Annotations;
-
 namespace SQLite.Net.Interop
 {
-    [PublicAPI]
     public enum ColType
     {
         Integer = 1,

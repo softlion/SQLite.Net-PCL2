@@ -22,9 +22,7 @@
 //
 
 using System;
-using JetBrains.Annotations;
 using SQLite.Net.Interop;
-using System.Diagnostics;
 
 namespace SQLite.Net
 {
@@ -40,19 +38,19 @@ namespace SQLite.Net
             Connection = conn;
         }
 
-        [PublicAPI]
+
         public bool Initialized { get; set; }
 
-        [PublicAPI]
+
         public string CommandText { get; set; }
 
-        [PublicAPI]
+
         protected SQLiteConnection Connection { get; set; }
 
-        [PublicAPI]
+
         protected IDbStatement Statement { get; set; }
 
-        [PublicAPI]
+
         public void Dispose()
         {
             Dispose(true);
@@ -66,7 +64,7 @@ namespace SQLite.Net
 
         static readonly object _locker = new object();
 
-        [PublicAPI]
+
         public int ExecuteNonQuery(object[] source)
         {
             Connection.TraceListener.WriteLine("Executing: {0}", CommandText);
@@ -115,7 +113,7 @@ namespace SQLite.Net
             throw SQLiteException.New(r, r.ToString());
         }
 
-        [PublicAPI]
+
         protected virtual IDbStatement Prepare()
         {
             try

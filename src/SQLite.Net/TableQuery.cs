@@ -27,7 +27,6 @@ using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
-using JetBrains.Annotations;
 using SQLite.Net.Interop;
 
 namespace SQLite.Net
@@ -53,7 +52,7 @@ namespace SQLite.Net
             Table = table;
         }
 
-        [PublicAPI]
+
         public TableQuery(ISQLitePlatform platformImplementation, SQLiteConnection conn)
         {
             _sqlitePlatform = platformImplementation;
@@ -61,13 +60,13 @@ namespace SQLite.Net
             Table = Connection.GetMapping(typeof (T));
         }
 
-        [PublicAPI]
+
         public SQLiteConnection Connection { get; private set; }
 
-        [PublicAPI]
+
         public TableMapping Table { get; private set; }
 
-        [PublicAPI]
+
         public IEnumerator<T> GetEnumerator()
         {
             if (!_deferred)
@@ -78,13 +77,13 @@ namespace SQLite.Net
             return GenerateCommand("*").ExecuteDeferredQuery<T>().GetEnumerator();
         }
 
-        [PublicAPI]
+
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
         }
 
-        [PublicAPI]
+
         public TableQuery<U> Clone<U>()
         {
             return new TableQuery<U>(_sqlitePlatform, Connection, Table)
@@ -102,8 +101,8 @@ namespace SQLite.Net
             };
         }
 
-        [PublicAPI]
-        public TableQuery<T> Where([NotNull] Expression<Func<T, bool>> predExpr)
+
+        public TableQuery<T> Where( Expression<Func<T, bool>> predExpr)
         {
             if (predExpr == null)
         {
@@ -120,7 +119,7 @@ namespace SQLite.Net
             return q;
         }
 
-        [PublicAPI]
+
         public TableQuery<T> Take(int n)
         {
             var q = Clone<T>();
@@ -131,8 +130,8 @@ namespace SQLite.Net
             return q;
         }
 
-        [PublicAPI]
-        public int Delete([NotNull] Expression<Func<T, bool>> predExpr)
+
+        public int Delete( Expression<Func<T, bool>> predExpr)
         {
             if (predExpr == null)
             {
@@ -168,7 +167,7 @@ namespace SQLite.Net
 				return result;
 		}
 
-        [PublicAPI]
+
         public TableQuery<T> Skip(int n)
         {
             var q = Clone<T>();
@@ -177,13 +176,13 @@ namespace SQLite.Net
             return q;
         }
 
-        [PublicAPI]
+
         public T ElementAt(int index)
         {
             return Skip(index).Take(1).First();
         }
 
-        [PublicAPI]
+
         public TableQuery<T> Deferred()
         {
             var q = Clone<T>();
@@ -191,31 +190,31 @@ namespace SQLite.Net
             return q;
         }
 
-        [PublicAPI]
+
         public TableQuery<T> OrderBy<TValue>(Expression<Func<T, TValue>> orderExpr)
         {
             return AddOrderBy(orderExpr, true);
         }
 
-        [PublicAPI]
+
         public TableQuery<T> OrderByDescending<TValue>(Expression<Func<T, TValue>> orderExpr)
         {
             return AddOrderBy(orderExpr, false);
         }
 
-        [PublicAPI]
+
         public TableQuery<T> ThenBy<TValue>(Expression<Func<T, TValue>> orderExpr)
         {
             return AddOrderBy(orderExpr, true);
         }
 
-        [PublicAPI]
+
         public TableQuery<T> ThenByDescending<TValue>(Expression<Func<T, TValue>> orderExpr)
             {
             return AddOrderBy(orderExpr, false);
         }
 
-        private TableQuery<T> AddOrderBy<TValue>([NotNull] Expression<Func<T, TValue>> orderExpr, bool asc)
+        private TableQuery<T> AddOrderBy<TValue>( Expression<Func<T, TValue>> orderExpr, bool asc)
         {
             if (orderExpr == null)
             {
@@ -257,7 +256,7 @@ namespace SQLite.Net
             return q;
         }
 
-        private void AddWhere([NotNull] Expression pred)
+        private void AddWhere( Expression pred)
         {
             if (pred == null)
                 throw new ArgumentNullException(nameof(pred));
@@ -270,7 +269,7 @@ namespace SQLite.Net
                 _where = Expression.AndAlso(_where, pred);
         }
 
-        [PublicAPI]
+
         public TableQuery<TResult> Join<TInner, TKey, TResult>(
             TableQuery<TInner> inner,
             Expression<Func<T, TKey>> outerKeySelector,
@@ -288,7 +287,7 @@ namespace SQLite.Net
             return q;
         }
 
-        private SQLiteCommand GenerateCommand([NotNull] string selectionList)
+        private SQLiteCommand GenerateCommand( string selectionList)
         {
             if (selectionList == null)
             {
@@ -327,7 +326,7 @@ namespace SQLite.Net
             return Connection.CreateCommand(cmdText.ToString(), args.ToArray());
         }
 
-        private CompileResult CompileExpr([NotNull] Expression expr, List<object> queryArgs)
+        private CompileResult CompileExpr( Expression expr, List<object> queryArgs)
         {
             if (expr == null)
             {
@@ -507,7 +506,7 @@ namespace SQLite.Net
                 //
                 // Get the member value
                 //
-                var val = _sqlitePlatform.ReflectionService.GetMemberValue(obj, expr, mem.Member);
+                var val = ReflectionService.GetMemberValue(obj, expr, mem.Member);
 
                 //
                 // Work special magic for enumerables
@@ -540,7 +539,6 @@ namespace SQLite.Net
             throw new NotSupportedException("Cannot compile: " + expr.NodeType);
         }
 
-        [CanBeNull]
         private object ConvertTo(object obj, Type t)
         {
             var nut = Nullable.GetUnderlyingType(t);
@@ -658,14 +656,14 @@ namespace SQLite.Net
             throw new NotSupportedException("Cannot get SQL for: " + n);
         }
 
-        [PublicAPI]
+
         public int Count()
         {
             return GenerateCommand("count(*)").ExecuteScalar<int>();
         }
 
-        [PublicAPI]
-        public int Count([NotNull] Expression<Func<T, bool>> predExpr)
+
+        public int Count( Expression<Func<T, bool>> predExpr)
         {
             if (predExpr == null)
             {
@@ -674,14 +672,14 @@ namespace SQLite.Net
             return Where(predExpr).Count();
         }
 
-        [PublicAPI]
+
         public T First()
         {
             var query = Take(1);
             return query.ToList().First();
         }
 
-        [PublicAPI]
+
         public T FirstOrDefault()
         {
             var query = Take(1);
@@ -692,7 +690,6 @@ namespace SQLite.Net
         {
             public string CommandText { get; set; }
 
-            [CanBeNull]
             public object Value { get; set; }
         }
     }

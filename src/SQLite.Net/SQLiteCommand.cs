@@ -31,7 +31,6 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Xml.Linq;
-using JetBrains.Annotations;
 using SQLite.Net.Interop;
 
 namespace SQLite.Net
@@ -40,7 +39,7 @@ namespace SQLite.Net
     {
         private static readonly IntPtr NegativePointer = new IntPtr(-1);
 
-        [NotNull] private readonly List<Binding> _bindings;
+        private readonly List<Binding> _bindings;
 
         private readonly SQLiteConnection _conn;
         private readonly ISQLitePlatform _sqlitePlatform;
@@ -54,10 +53,10 @@ namespace SQLite.Net
             CommandText = "";
         }
 
-        [PublicAPI]
+
         public string CommandText { get; set; }
 
-        [PublicAPI]
+
         public int ExecuteNonQuery()
         {
             _conn.TraceListener.WriteLine("Executing: {0}", this);
@@ -85,19 +84,19 @@ namespace SQLite.Net
             throw SQLiteException.New(r, r.ToString());
         }
 
-        [PublicAPI]
+
         public IEnumerable<T> ExecuteDeferredQuery<T>()
         {
             return ExecuteDeferredQuery<T>(_conn.GetMapping(typeof (T)));
         }
 
-        [PublicAPI]
+
         public List<T> ExecuteQuery<T>()
         {
             return ExecuteDeferredQuery<T>(_conn.GetMapping(typeof (T))).ToList();
         }
 
-        [PublicAPI]
+
         public List<T> ExecuteQuery<T>(TableMapping map)
         {
             return ExecuteDeferredQuery<T>(map).ToList();
@@ -114,13 +113,13 @@ namespace SQLite.Net
         ///     method to hook into the life-cycle of objects.
         ///     Type safety is not possible because MonoTouch does not support virtual generic methods.
         /// </remarks>
-        [PublicAPI]
+
         protected virtual void OnInstanceCreated(object obj)
         {
             // Can be overridden.
         }
 
-        [PublicAPI]
+
         public IEnumerable<T> ExecuteSimpleQuery<T>()
         {
             _conn.TraceListener.WriteLine("Executing simple query: {0}", this);
@@ -141,7 +140,7 @@ namespace SQLite.Net
             }
         }
 
-        [PublicAPI]
+
         public IEnumerable<T> ExecuteDeferredQuery<T>(TableMapping map)
         {
             _conn.TraceListener.WriteLine("Executing Query: {0}", this);
@@ -206,8 +205,7 @@ namespace SQLite.Net
             }
         }
 
-        [PublicAPI]
-        [CanBeNull]
+
         public T ExecuteScalar<T>()
         {
             _conn.TraceListener.WriteLine("Executing Query: {0}", this);
@@ -244,8 +242,8 @@ namespace SQLite.Net
             return val;
         }
 
-        [PublicAPI]
-        public void Bind([CanBeNull] string name, [CanBeNull] object val)
+
+        public void Bind(string name, object val)
         {
             _bindings.Add(new Binding
             {
@@ -254,13 +252,13 @@ namespace SQLite.Net
             });
         }
 
-        [PublicAPI]
+
         public void Bind(object val)
         {
             Bind(null, val);
         }
 
-        [PublicAPI]
+
         public override string ToString()
         {
             var parts = new string[1 + _bindings.Count];
@@ -467,7 +465,6 @@ namespace SQLite.Net
             }
         }
 
-        [CanBeNull]
         private object ReadCol(IDbStatement stmt, int index, ColType type, Type clrType)
         {
             var interfaces = clrType.GetTypeInfo().ImplementedInterfaces.ToList();
@@ -655,10 +652,8 @@ namespace SQLite.Net
 
         private class Binding
         {
-            [CanBeNull]
             public string Name { get; set; }
 
-            [CanBeNull]
             public object Value { get; set; }
 
             public int Index { get; set; }

@@ -41,18 +41,10 @@
     <Compile Include="..\GlobalAssemblyInfo.cs">
       <Link>Properties\GlobalAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="ReflectionServiceIOS.cs" />
-    <Compile Include="SQLiteApiIOS.cs" />
-    <Compile Include="SQLitePlatformIOS.cs" />
-    <Compile Include="StopwatchFactoryIOS.cs" />
-    <Compile Include="VolatileServiceIOS.cs" />
+    <Compile Include="SQLiteApi.cs" />
+    <Compile Include="SQLitePlatform.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
-  <ItemGroup>
-    <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3">
-      <Version>1.1.13</Version>
-    </PackageReference>
-  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SQLite.Net\SQLite.Net.csproj">
       <Project>{fe454822-5982-4327-ae8d-26819659dc9a}</Project>

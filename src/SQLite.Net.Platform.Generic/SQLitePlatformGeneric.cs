@@ -6,15 +6,9 @@ namespace SQLite.Net.Platform.Generic
     {
         public SQLitePlatformGeneric()
         {
-            SQLiteApi = new SQLiteApiGeneric();
-            StopwatchFactory = new StopwatchFactoryGeneric();
-            ReflectionService = new ReflectionServiceGeneric();
-            VolatileService = new VolatileServiceGeneric();
+            SQLiteApi = new SQLiteApi();
         }
 
         public ISQLiteApi SQLiteApi { get; private set; }
-        public IStopwatchFactory StopwatchFactory { get; private set; }
-        public IReflectionService ReflectionService { get; private set; }
-        public IVolatileService VolatileService { get; private set; }
     }
 }

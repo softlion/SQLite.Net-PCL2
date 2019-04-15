@@ -26,7 +26,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using JetBrains.Annotations;
 using SQLite.Net.Attributes;
 using SQLite.Net.Interop;
 
@@ -37,7 +36,7 @@ namespace SQLite.Net
         private readonly Column _autoPk;
         private Column[] _insertColumns;
 
-        [PublicAPI]
+
 		public TableMapping(Type type, IEnumerable<PropertyInfo> properties, CreateFlags createFlags = CreateFlags.None, IColumnInformationProvider infoProvider = null)
         {
 			if (infoProvider == null)
@@ -91,7 +90,7 @@ namespace SQLite.Net
             }
         }
 
-        [PublicAPI]
+
         public string PkWhereSqlForPartialKeys(int numberOfKeys)
         {
             if (numberOfKeys == PKs.Count)
@@ -100,47 +99,47 @@ namespace SQLite.Net
             return PKs.Take(numberOfKeys).Aggregate(new StringBuilder(), (sb, pk) => sb.AppendFormat(" \"{0}\" = ? and", pk.Name), sb => sb.Remove(sb.Length - 3, 3).ToString());
         }
 
-        [PublicAPI]
+
         public string GetByPrimaryKeysSqlForPartialKeys(int numberOfKeys)
         {
             return String.Format("select * from \"{0}\" where {1}", TableName, PkWhereSqlForPartialKeys(numberOfKeys));
         }
 
 
-        [PublicAPI]
+
         public Type MappedType { get; private set; }
 
-        [PublicAPI]
+
         public string TableName { get; private set; }
 
-        [PublicAPI]
+
         public Column[] Columns { get; private set; }
 
-        [PublicAPI]
+
         public Column PK { get { return PKs.FirstOrDefault(); } }
 
-        [PublicAPI]
+
         public readonly List<Column> PKs = new List<Column>();
 
-        [PublicAPI]
+
         public string GetByPrimaryKeySql { get; private set; }
 
-        [PublicAPI]
+
         public string GetByPrimaryKeysSql { get; private set; }
 
-        [PublicAPI]
+
         public string PkWhereSql { get; private set; }
 
-        [PublicAPI]
+
         public bool HasAutoIncPK { get; private set; }
 
-        [PublicAPI]
+
         public Column[] InsertColumns
         {
             get { return _insertColumns ?? (_insertColumns = Columns.Where(c => !c.IsAutoInc).ToArray()); }
         }
 
-        [PublicAPI]
+
         public void SetAutoIncPK(object obj, long id)
         {
             if (_autoPk != null)
@@ -149,14 +148,14 @@ namespace SQLite.Net
             }
         }
 
-        [PublicAPI]
+
         public Column FindColumnWithPropertyName(string propertyName)
         {
             var exact = Columns.FirstOrDefault(c => c.PropertyName == propertyName);
             return exact;
         }
 
-        [PublicAPI]
+
         public Column FindColumn(string columnName)
         {
             var exact = Columns.FirstOrDefault(c => c.Name == columnName);
@@ -176,7 +175,7 @@ namespace SQLite.Net
             {
             }
 
-            [PublicAPI]
+    
             public Column(PropertyInfo prop, CreateFlags createFlags = CreateFlags.None, IColumnInformationProvider infoProvider = null)
             {
 				if (infoProvider == null)
@@ -213,40 +212,40 @@ namespace SQLite.Net
                 MaxStringLength = Orm.MaxStringLength(prop);
             }
 
-            [PublicAPI]
+    
             public string Name { get; private set; }
 
-            [PublicAPI]
+    
             public string PropertyName
             {
                 get { return _prop.Name; }
             }
 
-            [PublicAPI]
+    
             public Type ColumnType { get; internal set; }
 
-            [PublicAPI]
+    
             public string Collation { get; private set; }
 
-            [PublicAPI]
+    
             public bool IsAutoInc { get; private set; }
 
-            [PublicAPI]
+    
             public bool IsAutoGuid { get; private set; }
 
-            [PublicAPI]
+    
             public bool IsPK { get; private set; }
 
-            [PublicAPI]
+    
             public IEnumerable<IndexedAttribute> Indices { get; set; }
 
-            [PublicAPI]
+    
             public bool IsNullable { get; private set; }
 
-            [PublicAPI]
+    
             public int? MaxStringLength { get; private set; }
 
-            [PublicAPI]
+    
             public object DefaultValue { get; private set; }
 
             /// <summary>
@@ -254,8 +253,8 @@ namespace SQLite.Net
             /// </summary>
             /// <param name="obj"></param>
             /// <param name="val"></param>
-            [PublicAPI]
-            public void SetValue(object obj, [CanBeNull] object val)
+    
+            public void SetValue(object obj, object val)
             {
                 var propType = _prop.PropertyType;
                 var typeInfo = propType.GetTypeInfo();
@@ -297,7 +296,7 @@ namespace SQLite.Net
                 }
             }
 
-            [PublicAPI]
+    
             public object GetValue(object obj)
             {
                 return _prop.GetValue(obj, null);

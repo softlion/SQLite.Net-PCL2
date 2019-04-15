@@ -1,9 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
-using JetBrains.Annotations;
 
 namespace SQLite.Net.Interop
 {
-    [PublicAPI]
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     public enum ExtendedResult
     {

@@ -4,7 +4,7 @@ using SQLitePCL;
 
 namespace SQLite.Net.Platform.NetCore
 {
-    public class SQLiteApi : ISQLiteApiExt
+    public class SQLiteApi : ISQLiteApi
     {
         public Result Open(string filename, out IDbHandle db, int flags, string zvfs)
         {
@@ -266,11 +266,6 @@ namespace SQLite.Net.Platform.NetCore
             return raw.sqlite3_backup_pagecount(internalBackup.DbBackupPtr);
         }
 
-        public int Sleep(int millis)
-        {
-            throw new NotImplementedException("Sleep is not implemented");
-            //return raw.sqlite3_sleep(millis);
-        }
 
         private struct DbBackupHandle : IDbBackupHandle
         {

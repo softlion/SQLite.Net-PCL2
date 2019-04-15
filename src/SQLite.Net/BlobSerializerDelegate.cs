@@ -1,5 +1,4 @@
 ﻿using System;
-using JetBrains.Annotations;
 
 namespace SQLite.Net
 {
@@ -15,7 +14,6 @@ namespace SQLite.Net
         private readonly DeserializeDelegate _deserializeDelegate;
         private readonly SerializeDelegate _serializeDelegate;
 
-        [PublicAPI]
         public BlobSerializerDelegate(SerializeDelegate serializeDelegate,
             DeserializeDelegate deserializeDelegate,
             CanSerializeDelegate canDeserializeDelegate)
@@ -27,19 +25,16 @@ namespace SQLite.Net
 
         #region IBlobSerializer implementation
 
-        [PublicAPI]
         public byte[] Serialize<T>(T obj)
         {
             return _serializeDelegate(obj);
         }
 
-        [PublicAPI]
         public object Deserialize(byte[] data, Type type)
         {
             return _deserializeDelegate(data, type);
         }
 
-        [PublicAPI]
         public bool CanDeserialize(Type type)
         {
             return _canDeserializeDelegate(type);
