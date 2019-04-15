@@ -18,7 +18,7 @@ cd nuget
 
 del *.nupkg
 
-$version="1.0.0-pre1"
+$version="1.0.0"
 nuget pack "sqlite-net2.nuspec" -Version $version
 nuget push "sqlite-net2.$version.nupkg" -Source $nugetServer
 
