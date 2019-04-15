@@ -4,7 +4,6 @@ using System.Linq;
 using SQLite.Net;
 using SQLite.Net.Attributes;
 using SQLite.Net.Interop;
-using SQLite.Net.Platform.Win32;
 using Path = System.IO.Path;
 
 using SQLite;
@@ -42,7 +41,7 @@ namespace Stocks
 
 	public class Database : SQLiteConnection
 	{
-		public Database (string path) : base(new SQLitePlatformWin32(), path)
+		public Database (string path) : base(path)
 		{
 			CreateTable<Stock> ();
 			CreateTable<Valuation> ();

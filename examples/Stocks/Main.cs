@@ -10,7 +10,9 @@ namespace Stocks.CommandLine
 	{
 		public static void Main (string[] args)
 		{
-			new Program ().Run ();
+            SQLitePCL.Batteries_V2.Init();
+
+            new Program ().Run ();
 		}
 
 		Database _db;
