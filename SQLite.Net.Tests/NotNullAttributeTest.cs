@@ -3,10 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
-using SQLite.Net.Attributes;
-using SQLite.Net.Interop;
 
-namespace SQLite.Net.Tests
+namespace SQLite.Net2.Tests
 {
     [TestFixture]
     public class NotNullAttributeTest : BaseTest

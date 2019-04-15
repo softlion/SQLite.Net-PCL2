@@ -23,9 +23,8 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using SQLite.Net.Interop;
 
-namespace SQLite.Net
+namespace SQLite.Net2
 {
     public class SQLiteConnectionWithLock : SQLiteConnection
     {

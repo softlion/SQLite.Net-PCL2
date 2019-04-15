@@ -22,7 +22,7 @@
 
 using System;
 
-namespace SQLite.Net.Attributes
+namespace SQLite.Net2
 {
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface)]
     public class TableAttribute : Attribute

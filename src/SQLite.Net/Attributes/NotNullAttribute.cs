@@ -23,7 +23,7 @@
 
 using System;
 
-namespace SQLite.Net.Attributes
+namespace SQLite.Net2
 {
     [AttributeUsage(AttributeTargets.Property)]
     public class NotNullAttribute : Attribute

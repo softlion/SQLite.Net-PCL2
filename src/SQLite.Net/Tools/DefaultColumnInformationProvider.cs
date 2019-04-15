@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
-using SQLite.Net.Attributes;
 using System.Collections.Generic;
 
-namespace SQLite.Net
+namespace SQLite.Net2
 {
 	public class DefaultColumnInformationProvider : IColumnInformationProvider
 	{

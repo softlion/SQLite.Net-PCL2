@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
-using SQLite.Net.Attributes;
+
 using System;
 using System.Reflection;
 
-namespace SQLite.Net.Tests 
+namespace SQLite.Net2.Tests 
 {
     [TestFixture]
     public class IgnoredTest : BaseTest
@@ -18,7 +18,7 @@ namespace SQLite.Net.Tests
             public string Foo { get; set; }
             public string Bar { get; set; }
 
-            [Attributes.Ignore]
+            [Ignore]
             public List<string> Ignored { get; set; }
         }
 

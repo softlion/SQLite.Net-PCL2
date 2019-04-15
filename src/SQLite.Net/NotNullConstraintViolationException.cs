@@ -22,9 +22,8 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using SQLite.Net.Interop;
 
-namespace SQLite.Net
+namespace SQLite.Net2
 {
 
     public class NotNullConstraintViolationException : SQLiteException

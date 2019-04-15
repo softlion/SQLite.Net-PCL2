@@ -21,8 +21,12 @@
 
 using System;
 
-namespace SQLite.Net.Interop
+namespace SQLite.Net2
 {
+    public interface IDbHandle { }
+    public interface IDbStatement { }
+    public interface IDbBackupHandle { }
+
     public interface ISQLiteApi
     {
         Result Open(string filename, out IDbHandle db, int flags, string zvfs);

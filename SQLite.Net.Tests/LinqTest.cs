@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
-using SQLite.Net.Attributes;
 
-namespace SQLite.Net.Tests 
+
+namespace SQLite.Net2.Tests 
 {
     [TestFixture]
     public class LinqTest : BaseTest

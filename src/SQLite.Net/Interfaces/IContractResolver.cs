@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SQLite.Net
+namespace SQLite.Net2
 {
     /// <summary>
     ///     Interface for the ContractResolver. This interface provides the contract for resolving interfaces to concreate

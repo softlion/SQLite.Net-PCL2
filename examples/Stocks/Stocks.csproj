@@ -73,9 +73,9 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\SQLite.Net\SQLite.Net.csproj">
+    <ProjectReference Include="..\..\src\SQLite.Net\SQLite.Net2.csproj">
       <Project>{fe454822-5982-4327-ae8d-26819659dc9a}</Project>
-      <Name>SQLite.Net</Name>
+      <Name>SQLite.Net2</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

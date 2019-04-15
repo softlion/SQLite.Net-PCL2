@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using Path = System.IO.Path;
-
+using System.IO;
 
 namespace Stocks.CommandLine
 {

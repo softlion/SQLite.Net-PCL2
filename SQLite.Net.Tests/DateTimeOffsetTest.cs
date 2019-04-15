@@ -1,8 +1,8 @@
 using System;
-using SQLite.Net.Attributes;
+
 using NUnit.Framework;
 
-namespace SQLite.Net.Tests
+namespace SQLite.Net2.Tests
 {
     [TestFixture]
     public class DateTimeOffsetTest : BaseTest

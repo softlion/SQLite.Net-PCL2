@@ -1,6 +1,6 @@
 ﻿using System.Globalization;
 
-namespace SQLite.Net
+namespace SQLite.Net2
 {
     public static class TraceListenerExtensions
     {

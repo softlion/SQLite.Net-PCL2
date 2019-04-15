@@ -5,7 +5,7 @@
 #####and put nuget.exe in the path.
 
 #####set /p nugetServer=Enter base nuget server url (with /): 
-$nugetServer="http://nugets.vapolia.fr/"
+$nugetServer="https://www.nuget.org"
 
 #####################
 #Build release config
@@ -18,9 +18,9 @@ cd nuget
 
 del *.nupkg
 
-$version="204.0.0-pre1"
-nuget pack "SQLite.Net.nuspec" -Version $version
-nuget push "SQLite.Net-PCL.$version.nupkg" -Source $nugetServer
+$version="1.0.0-pre1"
+nuget pack "sqlite-net2.nuspec" -Version $version
+nuget push "sqlite-net2.$version.nupkg" -Source $nugetServer
 
 #####set assembly info to version
 #####https://gist.github.com/derekgates/4678882

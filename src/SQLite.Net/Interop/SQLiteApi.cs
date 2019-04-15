@@ -1,8 +1,7 @@
 ﻿using System;
-using SQLite.Net.Interop;
 using SQLitePCL;
 
-namespace SQLite.Net
+namespace SQLite.Net2
 {
     public class SqliteApi : ISQLiteApi
     {

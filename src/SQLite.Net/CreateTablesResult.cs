@@ -22,7 +22,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace SQLite.Net
+namespace SQLite.Net2
 {
     public class CreateTablesResult
     {

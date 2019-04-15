@@ -1,12 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using SQLite.Net;
-using SQLite.Net.Attributes;
-using SQLite.Net.Interop;
-using Path = System.IO.Path;
-
-using SQLite;
+using SQLite.Net2;
 using System.Globalization;
 
 namespace Stocks

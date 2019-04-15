@@ -21,9 +21,7 @@
 // THE SOFTWARE.
 //
 
-using SQLite.Net.Interop;
-
-namespace SQLite.Net
+namespace SQLite.Net2
 {
     /// <summary>
     ///     Represents a parsed connection string.

@@ -23,9 +23,8 @@
 
 using System;
 using System.Collections.Generic;
-using SQLite.Net.Interop;
 
-namespace SQLite.Net
+namespace SQLite.Net2
 {
     [Obsolete]
     public class SQLiteConnectionPool

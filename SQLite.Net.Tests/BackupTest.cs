@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
-using SQLite.Net.Attributes;
+
 using System.IO;
 using System.Threading.Tasks;
 
-namespace SQLite.Net.Tests
+namespace SQLite.Net2.Tests
 {
     [TestFixture]
     public class BackupTest : BaseTest

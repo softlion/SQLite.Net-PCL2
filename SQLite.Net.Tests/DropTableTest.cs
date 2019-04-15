@@ -1,7 +1,7 @@
 using NUnit.Framework;
-using SQLite.Net.Attributes;
 
-namespace SQLite.Net.Tests
+
+namespace SQLite.Net2.Tests
 {
     [TestFixture]
     public class DropTableTest : BaseTest

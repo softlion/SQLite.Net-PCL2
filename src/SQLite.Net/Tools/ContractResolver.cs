@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SQLite.Net
+namespace SQLite.Net2
 {
     /// <summary>
     ///     Provide a default implementation of the ContractResolver.

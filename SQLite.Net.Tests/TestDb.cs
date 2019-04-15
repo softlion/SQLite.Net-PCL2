@@ -1,9 +1,9 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using SQLite.Net.Attributes;
 
-namespace SQLite.Net.Tests
+
+namespace SQLite.Net2.Tests
 {
     [Table("Product")]
     public interface IProduct

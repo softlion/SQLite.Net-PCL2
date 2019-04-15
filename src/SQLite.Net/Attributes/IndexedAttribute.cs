@@ -22,7 +22,7 @@
 
 using System;
 
-namespace SQLite.Net.Attributes
+namespace SQLite.Net2
 {
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = true)]
     public class IndexedAttribute : Attribute

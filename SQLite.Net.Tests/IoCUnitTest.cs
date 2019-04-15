@@ -4,7 +4,7 @@ using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
 
-namespace SQLite.Net.Tests 
+namespace SQLite.Net2.Tests 
 {
     [TestFixture]
     public class IoCUnitTests : BaseTest

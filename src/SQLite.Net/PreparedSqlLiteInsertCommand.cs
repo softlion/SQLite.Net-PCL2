@@ -22,9 +22,8 @@
 //
 
 using System;
-using SQLite.Net.Interop;
 
-namespace SQLite.Net
+namespace SQLite.Net2
 {
     /// <summary>
     ///     Since the insert never changed, we only need to prepare once.

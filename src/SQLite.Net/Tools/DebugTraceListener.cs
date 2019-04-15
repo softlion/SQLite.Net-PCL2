@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace SQLite.Net
+namespace SQLite.Net2
 {
     public sealed class DebugTraceListener : ITraceListener
     {

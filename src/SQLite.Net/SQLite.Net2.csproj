@@ -1,7 +1,9 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>SQLite.Net2</AssemblyName>
+    <RootNamespace>SQLite.Net2</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

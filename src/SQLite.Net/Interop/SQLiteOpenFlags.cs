@@ -22,7 +22,7 @@
 
 using System;
 
-namespace SQLite.Net.Interop
+namespace SQLite.Net2
 {
     [Flags]
     public enum SQLiteOpenFlags

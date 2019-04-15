@@ -30,10 +30,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Xml.Linq;
-using SQLite.Net.Attributes;
-using NotNullAttribute = SQLite.Net.Attributes.NotNullAttribute;
 
-namespace SQLite.Net
+namespace SQLite.Net2
 {
     internal static class Orm
     {

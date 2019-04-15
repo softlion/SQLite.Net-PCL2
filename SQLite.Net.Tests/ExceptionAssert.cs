@@ -1,7 +1,7 @@
 ﻿using System;
 using NUnit.Framework;
 
-namespace SQLite.Net.Tests
+namespace SQLite.Net2.Tests
 {
     public class ExceptionAssert : BaseTest
     {

@@ -6,7 +6,7 @@
 using System;
 using System.Linq;
 
-namespace SQLite.Net
+namespace SQLite.Net2
 {
     internal class ActiveInsertCommand
     {

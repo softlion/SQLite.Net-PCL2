@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 
-namespace SQLite.Net.Interop
+namespace SQLite.Net2
 {
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     public enum Result

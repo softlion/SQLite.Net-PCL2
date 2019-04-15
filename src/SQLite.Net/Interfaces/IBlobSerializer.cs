@@ -16,7 +16,7 @@
 
 using System;
 
-namespace SQLite.Net
+namespace SQLite.Net2
 {
     /// <summary>
     ///     The TextSerializer interface.

@@ -20,7 +20,7 @@
 // THE SOFTWARE.
 //
 
-namespace SQLite.Net.Interop
+namespace SQLite.Net2
 {
     public enum ColType
     {

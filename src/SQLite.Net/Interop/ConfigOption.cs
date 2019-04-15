@@ -21,7 +21,7 @@
 //
 
 
-namespace SQLite.Net.Interop
+namespace SQLite.Net2
 {
     public enum ConfigOption
     {

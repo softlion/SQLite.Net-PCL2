@@ -1,8 +1,7 @@
 ﻿using System.Reflection;
 using System.Collections.Generic;
-using SQLite.Net.Attributes;
 
-namespace SQLite.Net
+namespace SQLite.Net2
 {
 	public interface IColumnInformationProvider
 	{

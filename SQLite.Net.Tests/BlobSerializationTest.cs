@@ -2,12 +2,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using SQLite.Net.Attributes;
+
 using NUnit.Framework;
 using Newtonsoft.Json;
 using System.Text;
 
-namespace SQLite.Net.Tests
+namespace SQLite.Net2.Tests
 {
     public abstract class BlobSerializationTest : BaseTest
     {   

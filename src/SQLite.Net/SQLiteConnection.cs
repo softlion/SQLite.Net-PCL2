@@ -35,10 +35,8 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using SQLite.Net.Attributes;
-using SQLite.Net.Interop;
 
-namespace SQLite.Net
+namespace SQLite.Net2
 {
     /// <summary>
     ///     Represents an open connection to a SQLite database.

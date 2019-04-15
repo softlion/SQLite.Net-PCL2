@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SQLite.Net.Tests
+namespace SQLite.Net2.Tests
 {
     public class BaseTest
     {
