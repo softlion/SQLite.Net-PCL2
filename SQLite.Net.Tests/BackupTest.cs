@@ -46,7 +46,7 @@ namespace SQLite.Net.Tests
 
         public class BackupTestDb : SQLiteConnection
         {
-            public BackupTestDb(String path) : base(new SQLitePlatformTest(), path)
+            public BackupTestDb(String path) : base(path)
             {
                 CreateTable<BackupTestObj>();
                 CreateTable<BackupTestObj2>();
@@ -89,7 +89,7 @@ namespace SQLite.Net.Tests
             Assert.AreEqual(numIn2, result2.Count);
             Assert.AreEqual(obj2.Text, result2.First().Text);
 
-            string destDbPath = await srcDb.CreateDatabaseBackup(new SQLitePlatformTest());
+            string destDbPath = await srcDb.CreateDatabaseBackup();
 //            Assert.IsTrue(File.Exists(destDbPath));
 
             SQLiteConnection destDb = new BackupTestDb(destDbPath);

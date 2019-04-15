@@ -7,14 +7,6 @@ namespace SQLite.Net.Tests
     [TestFixture]
     public class ByteArrayTest : BaseTest
     {
-        [SetUp]
-        public void SetUp()
-        {
-            _sqlite3Platform = new SQLitePlatformTest();
-        }
-
-        private SQLitePlatformTest _sqlite3Platform;
-
         public class ByteArrayClass
         {
             [PrimaryKey, AutoIncrement]
@@ -45,6 +37,9 @@ namespace SQLite.Net.Tests
         [Description("Create objects with various byte arrays and check they can be stored and retrieved correctly")]
         public void ByteArrays()
         {
+            var database = new SQLiteConnection(TestPath.CreateTemporaryDatabase());
+            database.CreateTable<ByteArrayClass>();
+
             //Byte Arrays for comparisson
             ByteArrayClass[] byteArrays =
             {
@@ -68,18 +63,19 @@ namespace SQLite.Net.Tests
                 {
                     bytes = new byte[] {1, 0, 1}
                 },
-                new ByteArrayClass
-                {
-                    bytes = new byte[] {}
-                }, //Empty byte array should stay empty (and not become null)
+                //new ByteArrayClass
+                //{
+                //    //Rule should be that "Empty byte array should stay empty (and not become null)"
+                //    //But "The return value from sqlite3_column_blob() for a zero-length BLOB is a NULL pointer." (https://www.sqlite.org/c3ref/column_blob.html)
+                //    //So an empty byte array will become null
+                //    bytes = new byte[] {}
+                //}, 
                 new ByteArrayClass
                 {
                     bytes = null
                 } //Null should be supported
             };
 
-            var database = new SQLiteConnection(_sqlite3Platform, TestPath.CreateTemporaryDatabase());
-            database.CreateTable<ByteArrayClass>();
 
             //Insert all of the ByteArrayClass
             foreach (ByteArrayClass b in byteArrays)
@@ -113,7 +109,7 @@ namespace SQLite.Net.Tests
                 new ByteArrayClass() { bytes = null } //Null should be supported
             };
 
-            var database = new SQLiteConnection(_sqlite3Platform, TestPath.CreateTemporaryDatabase());
+            var database = new SQLiteConnection(TestPath.CreateTemporaryDatabase());
             database.CreateTable<ByteArrayClass>();
 
             byte[] criterion = new byte[] { 1, 0, 1 };
@@ -150,7 +146,7 @@ namespace SQLite.Net.Tests
                 new ByteArrayClass() { bytes = null } //Null should be supported
             };
 
-            var database = new SQLiteConnection(_sqlite3Platform, TestPath.CreateTemporaryDatabase());
+            var database = new SQLiteConnection(TestPath.CreateTemporaryDatabase());
             database.CreateTable<ByteArrayClass>();
 
             byte[] criterion = null;
@@ -189,7 +185,7 @@ namespace SQLite.Net.Tests
                 bytes = bytes
             };
 
-            var database = new SQLiteConnection(_sqlite3Platform, TestPath.CreateTemporaryDatabase());
+            var database = new SQLiteConnection(TestPath.CreateTemporaryDatabase());
             database.CreateTable<ByteArrayClass>();
 
             //Insert the ByteArrayClass

@@ -33,7 +33,6 @@ namespace SQLite.Net
 {
     public class TableQuery<T> : BaseTableQuery, IEnumerable<T>
     {
-        private readonly ISQLitePlatform _sqlitePlatform;
         private bool _deferred;
         private BaseTableQuery _joinInner;
         private Expression _joinInnerKeySelector;
@@ -45,17 +44,15 @@ namespace SQLite.Net
         private List<Ordering> _orderBys;
         private Expression _where;
 
-        private TableQuery(ISQLitePlatform platformImplementation, SQLiteConnection conn, TableMapping table)
+        private TableQuery(SQLiteConnection conn, TableMapping table)
         {
-            _sqlitePlatform = platformImplementation;
             Connection = conn;
             Table = table;
         }
 
 
-        public TableQuery(ISQLitePlatform platformImplementation, SQLiteConnection conn)
+        public TableQuery(SQLiteConnection conn)
         {
-            _sqlitePlatform = platformImplementation;
             Connection = conn;
             Table = Connection.GetMapping(typeof (T));
         }
@@ -86,7 +83,7 @@ namespace SQLite.Net
 
         public TableQuery<U> Clone<U>()
         {
-            return new TableQuery<U>(_sqlitePlatform, Connection, Table)
+            return new TableQuery<U>(Connection, Table)
             {
                 _where = _where,
                 _deferred = _deferred,
@@ -276,7 +273,7 @@ namespace SQLite.Net
             Expression<Func<TInner, TKey>> innerKeySelector,
             Expression<Func<T, TInner, TResult>> resultSelector)
         {
-            var q = new TableQuery<TResult>(_sqlitePlatform, Connection, Connection.GetMapping(typeof (TResult)))
+            var q = new TableQuery<TResult>(Connection, Connection.GetMapping(typeof (TResult)))
             {
                 _joinOuter = this,
                 _joinOuterKeySelector = outerKeySelector,

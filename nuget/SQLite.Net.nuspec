@@ -2,11 +2,11 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
     <metadata>
         <id>SQLite.Net-PCL</id>
-        <version>3.1.1</version>
+        <version>4.0.0</version>
         <title>SQLite.Net PCL</title>
         <authors>Benjamin Mayrargue</authors>
         <owners>Benjamin Mayrargue</owners>
-        <licenseUrl>https://raw.github.com/softlion/SQLite.Net-PCL/master/LICENSE.txt</licenseUrl>
+        <license>LICENSE.txt</license>
         <projectUrl>https://github.com/softlion/SQLite.Net-PCL</projectUrl>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
         <description>SQLite.Net PCL is an open source, minimal library to allow .NET and Mono applications to store data in SQLite databases.</description>
@@ -14,43 +14,10 @@
         <releaseNotes>https://github.com/softlion/SQLite.Net-PCL/commits</releaseNotes>
         <tags>sqlite xamarin win32 wp uwp</tags>
         <dependencies>
-          <group targetFramework="net45">
             <dependency id="SQLitePCLRaw.bundle_e_sqlite3" version="1.1.13" />
-          </group>
-
-          <group targetFramework="net45">
-            <dependency id="SQLitePCLRaw.bundle_e_sqlite3" version="1.1.13" />
-            <dependency id="SQLite.Native" version="3.12.3" />
-            <dependency id="System.Data.SQLite.Core" version="1.0.109.2" />
-          </group>
         </dependencies>
     </metadata>
     <files>
-        <!-- Xamarin.iOS (Unified)-->
-        <file src="SQLite.Net.Platform.XamarinIOS.Unified\SQLite.Net.Platform.XamarinIOS.Unified.dll" target="lib\Xamarin.iOS10\SQLite.Net.Platform.XamarinIOS.Unified.dll" />
-        <file src="SQLite.Net\SQLite.Net.dll" target="lib\Xamarin.iOS10\SQLite.Net.dll" />
-      
-        <!-- Xamarin.Android -->
-        <file src="SQLite.Net.Platform.XamarinAndroid\SQLite.Net.Platform.XamarinAndroid.dll" target="lib\MonoAndroid10\SQLite.Net.Platform.XamarinAndroid.dll" />
-        <file src="SQLite.Net\SQLite.Net.dll" target="lib\MonoAndroid10\SQLite.Net.dll" />
-
-        <!-- Win32 -->
-        <file src="SQLite.Net.Platform.Win32\SQLite.Net.Platform.Win32.dll" target="lib\net4\SQLite.Net.Platform.Win32.dll" />
-        <file src="SQLite.Net\SQLite.Net.dll" target="lib\net4\SQLite.Net.dll" />
-
-        <!-- NetCore2 -->
-        <file src="SQLite.Net.Platform.NetCore\SQLite.Net.Platform.NetCore.dll" target="lib\netcoreapp2.0\SQLite.Net.Platform.NetCore.dll" />
-        <file src="SQLite.Net\SQLite.Net.dll" target="lib\netcoreapp2.0\SQLite.Net.dll" />
-
-        <!-- Generic -->
-        <file src="SQLite.Net.Platform.Generic\SQLite.Net.Platform.Generic.dll" target="lib\net40\SQLite.Net.Platform.Generic.dll"/>
-        <file src="SQLite.Net\SQLite.Net.dll" target="lib\net40\SQLite.Net.dll" />
-
-        <!-- Uwp -->
-        <file src="SQLite.Net.Platform.Uwp\SQLite.Net.Platform.Uwp.dll" target="lib\uap10.0.15063\SQLite.Net.Platform.Uwp.dll" />
-        <file src="SQLite.Net\SQLite.Net.dll" target="lib\uap10.0.15063\SQLite.Net.dll" />
-
-        <!-- NetStandard -->
-      <file src="SQLite.Net\SQLite.Net.dll" target="lib\netstandard1.1\SQLite.Net.dll" />
+      <file src="SQLite.Net\SQLite.Net.dll" target="lib\netstandard2.0\SQLite.Net.dll" />
     </files>
 </package>

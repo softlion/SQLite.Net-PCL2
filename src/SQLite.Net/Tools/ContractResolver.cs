@@ -16,8 +16,6 @@ namespace SQLite.Net
     public class ContractResolver : IContractResolver
     {
         private static ContractResolver _current;
-        private readonly Func<Type, bool> _canCreate;
-        private readonly Func<Type, object[], object> _create;
 
         /// <summary>
         ///     Default Initializer for a new instance of the <see cref="ContractResolver" /> class.
@@ -38,16 +36,8 @@ namespace SQLite.Net
 
         public ContractResolver(Func<Type, bool> canCreate, Func<Type, object[], object> create)
         {
-            if (canCreate == null)
-            {
-                throw new ArgumentNullException("canCreate");
-            }
-            if (create == null)
-            {
-                throw new ArgumentNullException("create");
-            }
-            _canCreate = canCreate;
-            _create = create;
+            CanCreate = canCreate ?? throw new ArgumentNullException(nameof(canCreate));
+            Create = create ?? throw new ArgumentNullException(nameof(create));
         }
 
         /// <summary>
@@ -70,10 +60,7 @@ namespace SQLite.Net
         ///     true
         /// </value>
 
-        public Func<Type, bool> CanCreate
-        {
-            get { return _canCreate; }
-        }
+        public Func<Type, bool> CanCreate { get; }
 
         /// <summary>
         ///     Gets or sets the create function method.
@@ -83,10 +70,7 @@ namespace SQLite.Net
         /// </summary>
         /// <value>The create.</value>
 
-        public Func<Type, object[], object> Create
-        {
-            get { return _create; }
-        }
+        public Func<Type, object[], object> Create { get; }
 
         /// <summary>
         ///     Creates the object.
@@ -98,10 +82,10 @@ namespace SQLite.Net
         public object CreateObject(Type type, object[] constructorArgs = null)
         {
             if (CanCreate == null || CanCreate(type))
-            {
-                return Create(type, constructorArgs);
+            { 
+                var o = Create(type, constructorArgs);
+                return o;
             }
-
             return null;
         }
     }

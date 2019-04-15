@@ -26,7 +26,7 @@ namespace SQLite.Net.Tests
         public class TestDb : SQLiteConnection
         {
             public TestDb(String path)
-                : base(new SQLitePlatformTest(), path)
+                : base(path)
             {
                 CreateTable<TestObj>();
             }
@@ -35,7 +35,7 @@ namespace SQLite.Net.Tests
         [Test]
         public void AutoGuid_EmptyGuid()
         {
-            var db = new SQLiteConnection(new SQLitePlatformTest(), TestPath.CreateTemporaryDatabase());
+            var db = new SQLiteConnection(TestPath.CreateTemporaryDatabase());
             db.CreateTable<TestObj>(CreateFlags.AutoIncPK);
 
             var guid1 = new Guid("36473164-C9E4-4CDF-B266-A0B287C85623");
@@ -65,7 +65,7 @@ namespace SQLite.Net.Tests
         [Test]
         public void AutoGuid_HasGuid()
         {
-            var db = new SQLiteConnection(new SQLitePlatformTest(), TestPath.CreateTemporaryDatabase());
+            var db = new SQLiteConnection(TestPath.CreateTemporaryDatabase());
             db.CreateTable<TestObj>(CreateFlags.AutoIncPK);
 
             var guid1 = new Guid("36473164-C9E4-4CDF-B266-A0B287C85623");

@@ -24,8 +24,8 @@ namespace SQLite.Net.Tests
 
         public class TestDb : SQLiteConnection
         {
-            public TestDb(ISQLitePlatform sqlitePlatform, string path)
-                : base(sqlitePlatform, path)
+            public TestDb(string path)
+                : base(path)
             {
                 CreateTable<TestObj>();
             }
@@ -47,7 +47,7 @@ namespace SQLite.Net.Tests
                                           Name = (i % 2 == 0) ? testElement : alternateElement
                                       };
 
-            var db = new TestDb(new SQLitePlatformTest(), TestPath.CreateTemporaryDatabase());
+            var db = new TestDb(TestPath.CreateTemporaryDatabase());
 
             db.InsertAll(cq);
 

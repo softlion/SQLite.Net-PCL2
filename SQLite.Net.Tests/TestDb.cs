@@ -107,7 +107,7 @@ namespace SQLite.Net.Tests
     {
         public TestDb(bool storeDateTimeAsTicks = true, IContractResolver resolver = null)
             : base(
-                new SQLitePlatformTest(), TestPath.CreateTemporaryDatabase(), storeDateTimeAsTicks, null,
+                TestPath.CreateTemporaryDatabase(), storeDateTimeAsTicks, null,
                 extraTypeMappings: null,
                 resolver: resolver)
 		{

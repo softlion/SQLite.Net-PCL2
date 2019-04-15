@@ -46,6 +46,7 @@ namespace SQLite.Net
     public class SQLiteConnection : IDisposable
     {
         internal static readonly IDbHandle NullHandle = default(IDbHandle);
+        readonly SqliteApi sqlite = SqliteApi.Instance;
 
         /// <summary>
         ///     Used to list some code that we want the MonoTouch linker
@@ -104,11 +105,8 @@ namespace SQLite.Net
         ///     A contract resovler for resolving interfaces to concreate types during object creation
         /// </param>
 
-        public SQLiteConnection( ISQLitePlatform sqlitePlatform,  string databasePath,
-            bool storeDateTimeAsTicks = true,  IBlobSerializer serializer = null,  IDictionary<string, TableMapping> tableMappings = null,
-             IDictionary<Type, string> extraTypeMappings = null,  IContractResolver resolver = null)
-            : this(sqlitePlatform, databasePath, SQLiteOpenFlags.ReadWrite | SQLiteOpenFlags.Create, storeDateTimeAsTicks,
-                serializer, tableMappings, extraTypeMappings, resolver)
+        public SQLiteConnection(string databasePath, bool storeDateTimeAsTicks = true,  IBlobSerializer serializer = null,  IDictionary<string, TableMapping> tableMappings = null, IDictionary<Type, string> extraTypeMappings = null,  IContractResolver resolver = null)
+            : this(databasePath, SQLiteOpenFlags.ReadWrite | SQLiteOpenFlags.Create, storeDateTimeAsTicks, serializer, tableMappings, extraTypeMappings, resolver)
         {
         }
 
@@ -143,17 +141,11 @@ namespace SQLite.Net
         ///     A contract resovler for resolving interfaces to concreate types during object creation
         /// </param>
 
-        public SQLiteConnection( ISQLitePlatform sqlitePlatform, string databasePath, SQLiteOpenFlags openFlags,
-            bool storeDateTimeAsTicks = true,  IBlobSerializer serializer = null,  IDictionary<string, TableMapping> tableMappings = null,
+        public SQLiteConnection(string databasePath, SQLiteOpenFlags openFlags, bool storeDateTimeAsTicks = true,  IBlobSerializer serializer = null,  IDictionary<string, TableMapping> tableMappings = null,
              IDictionary<Type, string> extraTypeMappings = null, IContractResolver resolver = null)
         {
-            if (sqlitePlatform == null)
-        {
-                throw new ArgumentNullException("sqlitePlatform");
-            }
             ExtraTypeMappings = extraTypeMappings ?? new Dictionary<Type, string>();
             Serializer = serializer;
-            Platform = sqlitePlatform;
             Resolver = resolver ?? ContractResolver.Current;
 
             _tableMappings = tableMappings ?? new Dictionary<string, TableMapping>();
@@ -167,12 +159,12 @@ namespace SQLite.Net
             DatabasePath = databasePath;
 
             IDbHandle handle;
-            var r = Platform.SQLiteApi.Open(DatabasePath, out handle, (int) openFlags, null);
+            var r = sqlite.Open(DatabasePath, out handle, (int) openFlags, null);
 
             Handle = handle;
             if (r != Result.OK)
             {
-                throw SQLiteException.New(r, string.Format("Could not open database file: {0} ({1})", DatabasePath, r));
+                throw new SQLiteException(r, string.Format("Could not open database file: {0} ({1})", DatabasePath, r));
             }
 
             if (handle == null)
@@ -234,7 +226,7 @@ namespace SQLite.Net
                 _busyTimeout = value;
                 if (Handle != NullHandle)
                 {
-                    Platform.SQLiteApi.BusyTimeout(Handle, (int) _busyTimeout.TotalMilliseconds);
+                    sqlite.BusyTimeout(Handle, (int) _busyTimeout.TotalMilliseconds);
                 }
             }
         }
@@ -262,8 +254,6 @@ namespace SQLite.Net
             get { return _transactionDepth > 0; }
         }
 
-        public ISQLitePlatform Platform { get; private set; }
-
         public void Dispose()
         {
             Dispose(true);
@@ -272,11 +262,11 @@ namespace SQLite.Net
 
         public void EnableLoadExtension(int onoff)
         {
-            var r = Platform.SQLiteApi.EnableLoadExtension(Handle, onoff);
+            var r = sqlite.EnableLoadExtension(Handle, onoff);
             if (r != Result.OK)
             {
-                var msg = Platform.SQLiteApi.Errmsg16(Handle);
-                throw SQLiteException.New(r, msg);
+                var msg = sqlite.Errmsg16(Handle);
+                throw new SQLiteException(r, msg);
             }
         }
 
@@ -596,7 +586,7 @@ namespace SQLite.Net
         /// <seealso cref="SQLiteCommand.OnInstanceCreated" />
         protected virtual SQLiteCommand NewCommand()
         {
-            return new SQLiteCommand(Platform, this);
+            return new SQLiteCommand(this);
         }
 
         /// <summary>
@@ -616,7 +606,7 @@ namespace SQLite.Net
         {
             if (!_open)
             {
-                throw SQLiteException.New(Result.Error, "Cannot create commands from unopened database");
+                throw new SQLiteException(Result.Error, "Cannot create commands from unopened database");
             }
 
             var cmd = NewCommand();
@@ -812,7 +802,7 @@ namespace SQLite.Net
         /// </returns>
         public TableQuery<T> Table<T>() where T : class
         {
-            return new TableQuery<T>(Platform, this);
+            return new TableQuery<T>(this);
         }
 
         /// <summary>
@@ -1556,16 +1546,16 @@ namespace SQLite.Net
             }
             catch (SQLiteException ex)
             {
-                if (Platform.SQLiteApi.ExtendedErrCode(Handle) == ExtendedResult.ConstraintNotNull)
+                if (sqlite.ExtendedErrCode(Handle) == ExtendedResult.ConstraintNotNull)
                 {
-                    throw NotNullConstraintViolationException.New(ex.Result, ex.Message, map, obj);
+                    throw new NotNullConstraintViolationException(ex.Result, ex.Message, map, obj);
                 }
                 throw;
             }
 
             if (map.HasAutoIncPK)
             {
-                var id = Platform.SQLiteApi.LastInsertRowid(Handle);
+                var id = sqlite.LastInsertRowid(Handle);
                 map.SetAutoIncPK(obj, id);
             }
 
@@ -1677,9 +1667,9 @@ namespace SQLite.Net
             catch (SQLiteException ex)
             {
 
-                if (ex.Result == Result.Constraint && Platform.SQLiteApi.ExtendedErrCode(Handle) == ExtendedResult.ConstraintNotNull)
+                if (ex.Result == Result.Constraint && sqlite.ExtendedErrCode(Handle) == ExtendedResult.ConstraintNotNull)
                 {
-                    throw NotNullConstraintViolationException.New(ex, map, obj);
+                    throw new NotNullConstraintViolationException(ex, map, obj);
                 }
 
                 throw;
@@ -1881,35 +1871,28 @@ namespace SQLite.Net
 
         #region Backup
 
-        public async Task<string> CreateDatabaseBackup(ISQLitePlatform platform)
+        public async Task<string> CreateDatabaseBackup()
         {
-            var sqliteApi = platform.SQLiteApi;
-
-            if (sqliteApi == null)
-            {
-                return null;
-            }
-
             string destDBPath = this.DatabasePath + "." + DateTime.UtcNow.ToString("yyyy-MM-dd_HH-mm-ss-fff");
 
             IDbHandle destDB;
-            Result r = sqliteApi.Open(destDBPath, out destDB,
+            Result r = sqlite.Open(destDBPath, out destDB,
                 (int) (SQLiteOpenFlags.Create | SQLiteOpenFlags.ReadWrite), null);
 
             if (r != Result.OK)
             {
-                throw SQLiteException.New(r, String.Format("Could not open backup database file: {0} ({1})", destDBPath, r));
+                throw new SQLiteException(r, String.Format("Could not open backup database file: {0} ({1})", destDBPath, r));
             }
 
             /* Open the backup object used to accomplish the transfer */
-            IDbBackupHandle bHandle = sqliteApi.BackupInit(destDB, "main", this.Handle, "main");
+            IDbBackupHandle bHandle = sqlite.BackupInit(destDB, "main", this.Handle, "main");
 
             if (bHandle == null)
             {
                 // Close the database connection 
-                sqliteApi.Close(destDB);
+                sqlite.Close(destDB);
 
-                throw SQLiteException.New(r, String.Format("Could not initiate backup process: {0}", destDBPath));
+                throw new SQLiteException(r, String.Format("Could not initiate backup process: {0}", destDBPath));
             }
 
             /* Each iteration of this loop copies 5 database pages from database
@@ -1918,7 +1901,7 @@ namespace SQLite.Net
             ** 250 ms before repeating. */
             do
             {
-                r = sqliteApi.BackupStep(bHandle, 5);
+                r = sqlite.BackupStep(bHandle, 5);
 
                 if (r == Result.OK || r == Result.Busy || r == Result.Locked)
                 {
@@ -1927,18 +1910,18 @@ namespace SQLite.Net
             } while (r == Result.OK || r == Result.Busy || r == Result.Locked);
 
             /* Release resources allocated by backup_init(). */
-            r = sqliteApi.BackupFinish(bHandle);
+            r = sqlite.BackupFinish(bHandle);
 
             if (r != Result.OK)
             {
                 // Close the database connection 
-                sqliteApi.Close(destDB);
+                sqlite.Close(destDB);
 
-                throw SQLiteException.New(r, String.Format("Could not finish backup process: {0} ({1})", destDBPath, r));
+                throw new SQLiteException(r, String.Format("Could not finish backup process: {0} ({1})", destDBPath, r));
             }
 
             // Close the database connection 
-            sqliteApi.Close(destDB);
+            sqlite.Close(destDB);
 
             return destDBPath;
         }
@@ -1971,11 +1954,11 @@ namespace SQLite.Net
                             sqlInsertCommand.Dispose();
                         }
                     }
-                    var r = Platform.SQLiteApi.Close(Handle);
+                    var r = sqlite.Close(Handle);
                     if (r != Result.OK)
                     {
-                        var msg = Platform.SQLiteApi.Errmsg16(Handle);
-                        throw SQLiteException.New(r, msg);
+                        var msg = sqlite.Errmsg16(Handle);
+                        throw new SQLiteException(r, msg);
                     }
                 }
                 finally

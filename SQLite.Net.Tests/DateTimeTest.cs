@@ -75,14 +75,14 @@ namespace SQLite.Net.Tests
         [Test]
         public void AsyncAsString()
         {
-            var db = new SQLiteConnection(new SQLitePlatformTest(), TestPath.CreateTemporaryDatabase());
+            var db = new SQLiteConnection(TestPath.CreateTemporaryDatabase());
             TestAsyncDateTime(db, true);
         }
 
         [Test]
         public void  AsyncAsTicks()
         {
-            var db = new SQLiteConnection(new SQLitePlatformTest(), TestPath.CreateTemporaryDatabase());
+            var db = new SQLiteConnection(TestPath.CreateTemporaryDatabase());
             TestAsyncDateTime(db, true);
         }
     }

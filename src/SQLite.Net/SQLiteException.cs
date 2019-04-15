@@ -27,16 +27,11 @@ namespace SQLite.Net
 {
     public class SQLiteException : Exception
     {
-        protected SQLiteException(Result r, string message) : base(message)
-        {
-            Result = r;
-        }
-
         public Result Result { get; private set; }
 
-        public static SQLiteException New(Result r, string message)
+        public SQLiteException(Result r, string message, Exception innerException = null) : base(message, innerException)
         {
-            return new SQLiteException(r, message);
+            Result = r;
         }
     }
 }

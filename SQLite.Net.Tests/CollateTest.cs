@@ -32,8 +32,8 @@ namespace SQLite.Net.Tests
 
         public class TestDb : SQLiteConnection
         {
-            public TestDb(ISQLitePlatform sqlitePlatform, String path)
-                : base(sqlitePlatform, path)
+            public TestDb(String path)
+                : base(path)
             {
                 TraceListener = DebugTraceListener.Instance;
                 CreateTable<TestObj>();
@@ -51,7 +51,7 @@ namespace SQLite.Net.Tests
                 CollateNoCase = "Alpha ",
             };
 
-            var db = new TestDb(new SQLitePlatformTest(), TestPath.CreateTemporaryDatabase());
+            var db = new TestDb(TestPath.CreateTemporaryDatabase());
 
             db.Insert(obj);
 
@@ -121,8 +121,8 @@ namespace SQLite.Net.Tests
 
         public class TestDbSubtype : SQLiteConnection
         {
-            public TestDbSubtype(ISQLitePlatform sqlitePlatform, String path)
-                : base(sqlitePlatform, path)
+            public TestDbSubtype(String path)
+                : base(path)
             {
                 TraceListener = DebugTraceListener.Instance;
                 CreateTable<TestObjWithSubtypedAttributes>();
@@ -143,7 +143,7 @@ namespace SQLite.Net.Tests
                 CollateNoCase = "Alpha ",
             };
 
-            var db = new TestDbSubtype(new SQLitePlatformTest(), TestPath.CreateTemporaryDatabase());
+            var db = new TestDbSubtype(TestPath.CreateTemporaryDatabase());
 
             db.Insert(obj);
 

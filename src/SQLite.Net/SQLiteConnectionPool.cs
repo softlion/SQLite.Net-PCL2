@@ -32,12 +32,11 @@ namespace SQLite.Net
     {
         private readonly Dictionary<string, Entry> _entries = new Dictionary<string, Entry>();
         private readonly object _entriesLock = new object();
-        private readonly ISQLitePlatform _sqlitePlatform;
+        readonly SqliteApi sqlite = SqliteApi.Instance;
 
 
-        public SQLiteConnectionPool(ISQLitePlatform sqlitePlatform)
+        public SQLiteConnectionPool()
         {
-            _sqlitePlatform = sqlitePlatform;
         }
 
 
@@ -50,7 +49,7 @@ namespace SQLite.Net
 
                 if (!_entries.TryGetValue(key, out entry))
                 {
-                    entry = new Entry(_sqlitePlatform, connectionString);
+                    entry = new Entry(connectionString);
                     _entries[key] = entry;
                 }
 
@@ -86,10 +85,10 @@ namespace SQLite.Net
 
         private class Entry
         {
-            public Entry(ISQLitePlatform sqlitePlatform, SQLiteConnectionString connectionString)
+            public Entry(SQLiteConnectionString connectionString)
             {
                 ConnectionString = connectionString;
-                Connection = new SQLiteConnectionWithLock(sqlitePlatform, connectionString);
+                Connection = new SQLiteConnectionWithLock(connectionString);
             }
 
             public SQLiteConnectionString ConnectionString { get; private set; }

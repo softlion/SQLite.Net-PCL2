@@ -1,11 +1,9 @@
 using System.Linq;
 using NUnit.Framework;
 using SQLite.Net.Attributes;
-using SQLite.Net.Interop;
 
 namespace SQLite.Net.Tests
 {
-    [NUnit.Framework.Ignore("This test class/file was not included in the original project and is broken")]
     [TestFixture]
     public class ConnectionTrackingTest : BaseTest
     {
@@ -17,11 +15,9 @@ namespace SQLite.Net.Tests
             public string Name { get; set; }
             public decimal Price { get; set; }
 
-            public TestDb Connection { get; private set; }
-
-            public OrderLine[] GetOrderLines()
+            public OrderLine[] GetOrderLines(TestDb db)
             {
-                return Connection.Table<OrderLine>().Where(o => o.ProductId == Id).ToArray();
+                return db.Table<OrderLine>().Where(o => o.ProductId == Id).ToArray();
             }
         }
 
@@ -33,14 +29,12 @@ namespace SQLite.Net.Tests
             public int ProductId { get; set; }
             public int Quantity { get; set; }
             public decimal UnitPrice { get; set; }
-
-            public TestDb Connection { get; private set; }
         }
 
         public class TestDb : SQLiteConnection
         {
-            public TestDb(ISQLitePlatform sqlitePlatform)
-                : base(sqlitePlatform, TestPath.CreateTemporaryDatabase())
+            public TestDb()
+                : base(TestPath.CreateTemporaryDatabase())
             {
                 CreateTable<Product>();
                 CreateTable<OrderLine>();
@@ -51,7 +45,7 @@ namespace SQLite.Net.Tests
         [Test]
         public void CreateThem()
         {
-            var db = new TestDb(new SQLitePlatformTest());
+            var db = new TestDb();
 
             var foo = new Product
             {
@@ -84,11 +78,9 @@ namespace SQLite.Net.Tests
                 UnitPrice = 100.01m
             });
 
-            OrderLine[] lines = foo.GetOrderLines();
+            OrderLine[] lines = foo.GetOrderLines(db);
 
             Assert.AreEqual(lines.Length, 2, "Has 2 order lines");
-            Assert.AreEqual(foo.Connection, db, "foo.Connection was set");
-            Assert.AreEqual(lines[0].Connection, db, "lines[0].Connection was set");
         }
     }
 }

@@ -100,7 +100,7 @@ namespace SQLite.Net.Tests
                 }
                 catch (SQLiteException ex)
                 {
-                    if (db.Platform.SQLiteApi.LibVersionNumber() < 3007017 && ex.Result == Result.Constraint)
+                    if (SqliteApi.Instance.LibVersionNumber() < 3007017 && ex.Result == Result.Constraint)
                     {
                         Assert.Inconclusive("Detailed constraint information is only available in SQLite3 version 3.7.17 and above.");
                     }
@@ -136,7 +136,7 @@ namespace SQLite.Net.Tests
                 }
                 catch (SQLiteException ex)
                 {
-                    if (db.Platform.SQLiteApi.LibVersionNumber() < 3007017 && ex.Result == Result.Constraint)
+                    if (SqliteApi.Instance.LibVersionNumber() < 3007017 && ex.Result == Result.Constraint)
                     {
                         Assert.Inconclusive("Detailed constraint information is only available in SQLite3 version 3.7.17 and above.");
                     }
@@ -168,7 +168,7 @@ namespace SQLite.Net.Tests
                 }
                 catch (SQLiteException ex)
                 {
-                    if (db.Platform.SQLiteApi.LibVersionNumber() < 3007017 && ex.Result == Result.Constraint)
+                    if (SqliteApi.Instance.LibVersionNumber() < 3007017 && ex.Result == Result.Constraint)
                     {
                         Assert.Inconclusive("Detailed constraint information is only available in SQLite3 version 3.7.17 and above.");
                     }
@@ -183,7 +183,7 @@ namespace SQLite.Net.Tests
             using (TestDb db = new TestDb())
             {
                 // Skip this test if the Dll doesn't support the extended SQLITE_CONSTRAINT codes
-                if (db.Platform.SQLiteApi.LibVersionNumber() >= 3007017)
+                if (SqliteApi.Instance.LibVersionNumber() >= 3007017)
                 {
                     db.CreateTable<NotNullNoPK>();
 
@@ -210,7 +210,7 @@ namespace SQLite.Net.Tests
                     }
                     catch (SQLiteException ex)
                     {
-                        if (db.Platform.SQLiteApi.LibVersionNumber() < 3007017 && ex.Result == Result.Constraint)
+                        if (SqliteApi.Instance.LibVersionNumber() < 3007017 && ex.Result == Result.Constraint)
                         {
                             Assert.Inconclusive("Detailed constraint information is only available in SQLite3 version 3.7.17 and above.");
                         }
@@ -232,7 +232,7 @@ namespace SQLite.Net.Tests
             using (TestDb db = new TestDb())
             {
                 // Skip this test if the Dll doesn't support the extended SQLITE_CONSTRAINT codes
-                if (db.Platform.SQLiteApi.LibVersionNumber() >= 3007017)
+                if (SqliteApi.Instance.LibVersionNumber() >= 3007017)
                 {
                     db.CreateTable<NotNullNoPK>();
 
@@ -247,7 +247,7 @@ namespace SQLite.Net.Tests
                     }
                     catch (SQLiteException ex)
                     {
-                        if (db.Platform.SQLiteApi.LibVersionNumber() < 3007017 && ex.Result == Result.Constraint)
+                        if (SqliteApi.Instance.LibVersionNumber() < 3007017 && ex.Result == Result.Constraint)
                         {
                             Assert.Inconclusive("Detailed constraint information is only available in SQLite3 version 3.7.17 and above.");
                         }
@@ -286,7 +286,7 @@ namespace SQLite.Net.Tests
                 }
                 catch (SQLiteException ex)
                 {
-                    if (db.Platform.SQLiteApi.LibVersionNumber() < 3007017 && ex.Result == Result.Constraint)
+                    if (SqliteApi.Instance.LibVersionNumber() < 3007017 && ex.Result == Result.Constraint)
                     {
                         Assert.Inconclusive("Detailed constraint information is only available in SQLite3 version 3.7.17 and above.");
                     }

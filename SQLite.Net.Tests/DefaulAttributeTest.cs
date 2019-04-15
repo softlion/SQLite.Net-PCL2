@@ -137,7 +137,7 @@ namespace SQLite.Net.Tests
 		public class TestDbWithCustomAttributes : SQLiteConnection
 		{
 			public TestDbWithCustomAttributes(String path)
-				: base(new SQLitePlatformTest(), path)
+				: base(path)
 			{
 				ColumnInformationProvider = new TestColumnInformationProvider();
 				CreateTable<TestObjIntWithDefaultValue>();

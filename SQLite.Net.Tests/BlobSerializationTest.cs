@@ -16,7 +16,7 @@ namespace SQLite.Net.Tests
         public class BlobDatabase : SQLiteConnection
         {
             public BlobDatabase(IBlobSerializer serializer) :
-                base(new SQLitePlatformTest(), TestPath.CreateTemporaryDatabase(), false, serializer)
+                base(TestPath.CreateTemporaryDatabase(), false, serializer)
             {
                 DropTable<ComplexOrder>();
             }
@@ -331,11 +331,7 @@ namespace SQLite.Net.Tests
                 {
                     if (t == typeof(DivideByZeroException))
                     {
-#if __WINRT__ || WINDOWS_PHONE
-                        var json = Encoding.UTF8.GetString(d, 0, d.Length);
-#else
                         var json = Encoding.UTF8.GetString(d);
-#endif
                         var result = JsonConvert.DeserializeObject<DivideByZeroException>(json);
                         return result;
                     }
@@ -358,7 +354,11 @@ namespace SQLite.Net.Tests
                 var dbItem = db.Find<UnsupportedTypes>(item.Id);
 
                 Assert.AreEqual(item.Id, dbItem.Id);
-                Assert.AreEqual(item.DateTimeOffset, dbItem.DateTimeOffset);
+                Assert.AreEqual(item.DateTimeOffset, dbItem.DateTimeOffset); 
+                //most db stores datetimeoffset as utc, forgetting the offset part. This one is not an exception.
+                //TODO: test fails
+                Assert.AreEqual(item.DateTimeOffset.Offset, dbItem.DateTimeOffset.Offset);
+                //TODO: test fails
                 Assert.AreEqual(item.DivideByZeroException.Message, dbItem.DivideByZeroException.Message);
             }
         }

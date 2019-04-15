@@ -87,7 +87,7 @@ namespace SQLite.Net.Tests
         [Test]
         public void NullableFloat()
         {
-            var db = new SQLiteConnection(new SQLitePlatformTest(), TestPath.CreateTemporaryDatabase());
+            var db = new SQLiteConnection(TestPath.CreateTemporaryDatabase());
             // if the Ignored property is not ignore this will cause an exception
             db.CreateTable<DummyClass>();
         }
@@ -95,7 +95,7 @@ namespace SQLite.Net.Tests
 		[Test]
 		public void CustomIgnoreAttributeTest()
 		{
-			var db = new SQLiteConnection(new SQLitePlatformTest(), TestPath.CreateTemporaryDatabase());
+			var db = new SQLiteConnection(TestPath.CreateTemporaryDatabase());
 			db.ColumnInformationProvider = new TestColumnInformationProvider();
 			// if the Ignored property is not ignore this will cause an exception
 			db.CreateTable<TestObjIntWithIgnore>();

@@ -32,6 +32,7 @@ namespace SQLite.Net
     public class PreparedSqlLiteInsertCommand : IDisposable
     {
         private static readonly IDbStatement NullStatement = default(IDbStatement);
+        readonly SqliteApi sqlite = SqliteApi.Instance;
 
         internal PreparedSqlLiteInsertCommand(SQLiteConnection conn)
         {
@@ -74,43 +75,39 @@ namespace SQLite.Net
                 Initialized = true;
             }
 
-            var sqlitePlatform = Connection.Platform;
             //bind the values.
             if (source != null)
             {
                 for (var i = 0; i < source.Length; i++)
-                {
-                    SQLiteCommand.BindParameter(sqlitePlatform.SQLiteApi, Statement, i + 1, source[i],
-                        Connection.StoreDateTimeAsTicks, Connection.Serializer);
-                }
+                    SQLiteCommand.BindParameter(sqlite, Statement, i + 1, source[i], Connection.StoreDateTimeAsTicks, Connection.Serializer);
             }
 
             Result r;
             lock (_locker)
             {
-                r = sqlitePlatform.SQLiteApi.Step(Statement);
+                r = sqlite.Step(Statement);
             }
 
             if (r == Result.Done)
             {
-                var rowsAffected = sqlitePlatform.SQLiteApi.Changes(Connection.Handle);
-                sqlitePlatform.SQLiteApi.Reset(Statement);
+                var rowsAffected = sqlite.Changes(Connection.Handle);
+                sqlite.Reset(Statement);
                 return rowsAffected;
             }
             if (r == Result.Error)
             {
-                var msg = sqlitePlatform.SQLiteApi.Errmsg16(Connection.Handle);
-                sqlitePlatform.SQLiteApi.Reset(Statement);
-                throw SQLiteException.New(r, msg);
+                var msg = sqlite.Errmsg16(Connection.Handle);
+                sqlite.Reset(Statement);
+                throw new SQLiteException(r, msg);
             }
-            if (r == Result.Constraint && sqlitePlatform.SQLiteApi.ExtendedErrCode(Connection.Handle) == ExtendedResult.ConstraintNotNull)
+            if (r == Result.Constraint && sqlite.ExtendedErrCode(Connection.Handle) == ExtendedResult.ConstraintNotNull)
             {
-                sqlitePlatform.SQLiteApi.Reset(Statement);
-                throw NotNullConstraintViolationException.New(r, sqlitePlatform.SQLiteApi.Errmsg16(Connection.Handle));
+                sqlite.Reset(Statement);
+                throw new NotNullConstraintViolationException(r, sqlite.Errmsg16(Connection.Handle));
             }
-            sqlitePlatform.SQLiteApi.Reset(Statement);
+            sqlite.Reset(Statement);
 
-            throw SQLiteException.New(r, r.ToString());
+            throw new SQLiteException(r, r.ToString());
         }
 
 
@@ -118,7 +115,7 @@ namespace SQLite.Net
         {
             try
             {
-                var stmt = Connection.Platform.SQLiteApi.Prepare2(Connection.Handle, CommandText);
+                var stmt = sqlite.Prepare2(Connection.Handle, CommandText);
                 return stmt;
             }
             catch (Exception e)
@@ -133,7 +130,7 @@ namespace SQLite.Net
             {
                 try
                 {
-                    Connection.Platform.SQLiteApi.Finalize(Statement);
+                    sqlite.Finalize(Statement);
                 }
                 finally
                 {

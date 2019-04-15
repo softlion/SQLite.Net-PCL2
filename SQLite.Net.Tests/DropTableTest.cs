@@ -17,7 +17,7 @@ namespace SQLite.Net.Tests
 
         public class TestDb : SQLiteConnection
         {
-            public TestDb() : base(new SQLitePlatformTest(), TestPath.CreateTemporaryDatabase())
+            public TestDb() : base(TestPath.CreateTemporaryDatabase())
             {
                 TraceListener = DebugTraceListener.Instance;
             }
@@ -42,7 +42,7 @@ namespace SQLite.Net.Tests
 
             db.DropTable<Product>();
 
-            ExceptionAssert.Throws<SQLiteException>(() => db.Table<Product>().Count());
+            Assert.Throws<SQLiteException>(() => db.Table<Product>().Count());
         }
     }
 }

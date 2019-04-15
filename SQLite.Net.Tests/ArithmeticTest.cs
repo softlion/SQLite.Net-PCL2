@@ -29,7 +29,7 @@ namespace SQLite.Net.Tests
         public class TestDb : SQLiteConnection
         {
             public TestDb(String path)
-                : base(new SQLitePlatformTest(), path)
+                : base(path)
             {
                 CreateTable<TestObjString>();
                 CreateTable<TestObjInt>();

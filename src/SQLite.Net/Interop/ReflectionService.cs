@@ -30,7 +30,10 @@ namespace SQLite.Net.Interop
     public static class ReflectionService
     {
         public static IEnumerable<PropertyInfo> GetPublicInstanceProperties(Type mappedType)
-            => mappedType.GetTypeInfo().DeclaredProperties.Where(p => p.CanRead && p.CanWrite && p.GetMethod.IsPublic && p.SetMethod.IsPublic && !p.GetMethod.IsStatic && !p.SetMethod.IsStatic);
+        {
+            var properties = mappedType.GetTypeInfo().GetRuntimeProperties();
+            return properties.Where(p => p.CanRead && p.CanWrite && p.GetMethod.IsPublic && p.SetMethod.IsPublic && !p.GetMethod.IsStatic && !p.SetMethod.IsStatic);
+        }
 
         public static object GetMemberValue(object obj, Expression expr, MemberInfo member)
         {

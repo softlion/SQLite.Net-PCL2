@@ -25,8 +25,8 @@ namespace SQLite.Net.Tests
 
         public class DbAcs : SQLiteConnection
         {
-            public DbAcs(ISQLitePlatform sqlitePlatform, String path)
-                : base(sqlitePlatform, path)
+            public DbAcs(String path)
+                : base(path)
             {
                 TraceListener = DebugTraceListener.Instance;
             }
@@ -46,9 +46,8 @@ namespace SQLite.Net.Tests
         [Test]
         public void TestBoolean()
         {
-            var sqlite3Platform = new SQLitePlatformTest();
             string tmpFile = TestPath.CreateTemporaryDatabase();
-            var db = new DbAcs(sqlite3Platform, tmpFile);
+            var db = new DbAcs(tmpFile);
             db.buildTable();
             for (int i = 0; i < 10; i++)
             {
