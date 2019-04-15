@@ -10,16 +10,16 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{5BD976ED-6E22-44A3-A5A1-D6C6633BAADD}"
 	ProjectSection(SolutionItems) = preProject
 		Appveyor.yml = Appveyor.yml
-		nuget\build.bat = nuget\build.bat
 		license.md = license.md
 		LICENSE.txt = LICENSE.txt
+		nuget\pack.ps1 = nuget\pack.ps1
 		README.md = README.md
 		nuget\SQLite.Net.nuspec = nuget\SQLite.Net.nuspec
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SQLite.Net", "src\SQLite.Net\SQLite.Net.csproj", "{FE454822-5982-4327-AE8D-26819659DC9A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SQLite.Net.Tests", "SQLite.Net.Tests\SQLite.Net.Tests.csproj", "{C8A21AC1-D63B-4908-BE59-98F73D9C9061}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SQLite.Net.Tests", "SQLite.Net.Tests\SQLite.Net.Tests.csproj", "{C8A21AC1-D63B-4908-BE59-98F73D9C9061}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,23 +1,33 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
-    <metadata>
-        <id>SQLite.Net-PCL</id>
-        <version>4.0.0</version>
-        <title>SQLite.Net PCL</title>
-        <authors>Benjamin Mayrargue</authors>
-        <owners>Benjamin Mayrargue</owners>
-        <license>LICENSE.txt</license>
-        <projectUrl>https://github.com/softlion/SQLite.Net-PCL</projectUrl>
-        <requireLicenseAcceptance>false</requireLicenseAcceptance>
-        <description>SQLite.Net PCL is an open source, minimal library to allow .NET and Mono applications to store data in SQLite databases.</description>
-        <summary>A .NET client library to access SQLite embedded database files in a LINQ manner.</summary>
-        <releaseNotes>https://github.com/softlion/SQLite.Net-PCL/commits</releaseNotes>
-        <tags>sqlite xamarin win32 wp uwp</tags>
-        <dependencies>
-            <dependency id="SQLitePCLRaw.bundle_e_sqlite3" version="1.1.13" />
-        </dependencies>
-    </metadata>
-    <files>
-      <file src="SQLite.Net\SQLite.Net.dll" target="lib\netstandard2.0\SQLite.Net.dll" />
-    </files>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata minClientVersion="2.5">
+    <id>SQLite.Net-PCL</id>
+    <version>4.0.0</version>
+    <title>SQLite.Net PCL</title>
+    <authors>Benjamin Mayrargue</authors>
+    <owners>Benjamin Mayrargue</owners>
+
+    <projectUrl>https://github.com/softlion/SQLite.Net-PCL</projectUrl>
+    <!--<iconUrl>http://github.com/contoso/UsefulStuff/nuget_icon.png</iconUrl>-->
+    <!--<license type="expression">LICENSE.txt</license>-->
+    <licenseUrl>https://raw.githubusercontent.com/softlion/SQLite.Net-PCL/master/license.md</licenseUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+
+    <releaseNotes>https://github.com/softlion/SQLite.Net-PCL/commits</releaseNotes>
+
+    <description>SQLite.Net PCL is an open source, minimal library to allow .NET and Mono applications to store data in SQLite databases.</description>
+    <tags>sqlite xamarin win32 wp uwp</tags>
+    <summary>A .NET client library to access SQLite embedded database files in a LINQ manner.</summary>
+
+    <dependencies>
+      <dependency id="SQLitePCLRaw.bundle_e_sqlite3" version="1.1.13" />
+    </dependencies>
+
+  </metadata>
+
+  <files>
+    <file src="..\src\SQLite.Net\bin\release\netstandard2.0\SQLite.Net.dll" target="lib\netstandard2.0\" />
+    <file src="..\src\SQLite.Net\bin\release\netstandard2.0\SQLite.Net.pdb" target="lib\netstandard2.0\" />
+  </files>
+
 </package>
