@@ -2,9 +2,7 @@
 
 Add this package to your netstandard project:
 
-```
-TODO
-```
+[![NuGet](https://img.shields.io/nuget/v/sqlite-net2.svg)](https://www.nuget.org/packages/sqlite-net2/)
 
 And call this function in your executable projects (.net, ios, android, uwp, mac, ...):
 
