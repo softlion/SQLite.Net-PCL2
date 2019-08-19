@@ -72,11 +72,11 @@ namespace SQLite.Net2
         //        string ColumnText(IDbStatement stmt, int index);
 
         string ColumnText16(IDbStatement stmt, int index);
-        byte[] ColumnBlob(IDbStatement stmt, int index);
+        ReadOnlySpan<byte> ColumnBlob(IDbStatement stmt, int index);
         int ColumnBytes(IDbStatement stmt, int index);
         //        string ColumnText(IDbStatement stmt, int index);
 
-        byte[] ColumnByteArray(IDbStatement stmt, int index);
+        ReadOnlySpan<byte> ColumnByteArray(IDbStatement stmt, int index);
 
 
         #region Backup

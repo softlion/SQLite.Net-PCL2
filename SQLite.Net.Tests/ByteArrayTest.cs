@@ -135,25 +135,23 @@ namespace SQLite.Net2.Tests
         [Description("Uses a null byte array to find a record")]
         public void ByteArrayWhereNull()
         {
-            //Byte Arrays for comparisson
-            ByteArrayClass[] byteArrays = new ByteArrayClass[] {
-                new ByteArrayClass() { bytes = new byte[] { 1, 2, 3, 4, 250, 252, 253, 254, 255 } }, //Range check
-                new ByteArrayClass() { bytes = new byte[] { 0 } }, //null bytes need to be handled correctly
-                new ByteArrayClass() { bytes = new byte[] { 0, 0 } },
-                new ByteArrayClass() { bytes = new byte[] { 0, 1, 0 } },
-                new ByteArrayClass() { bytes = new byte[] { 1, 0, 1 } },
-                new ByteArrayClass() { bytes = new byte[] { } }, //Empty byte array should stay empty (and not become null)
-                new ByteArrayClass() { bytes = null } //Null should be supported
+            //Byte Arrays for comparison
+            ByteArrayClass[] byteArrays = {
+                new ByteArrayClass { bytes = new byte[] { 1, 2, 3, 4, 250, 252, 253, 254, 255 } }, //Range check
+                new ByteArrayClass { bytes = new byte[] { 0 } }, //null bytes need to be handled correctly
+                new ByteArrayClass { bytes = new byte[] { } }, //Empty byte array should stay empty (and not become null)
+                new ByteArrayClass { bytes = new byte[] { 0, 0 } },
+                new ByteArrayClass { bytes = new byte[] { 0, 1, 0 } },
+                new ByteArrayClass { bytes = new byte[] { 1, 0, 1 } },
+                new ByteArrayClass { bytes = null } //Null should be supported
             };
 
             var database = new SQLiteConnection(TestPath.CreateTemporaryDatabase());
             database.CreateTable<ByteArrayClass>();
 
-            byte[] criterion = null;
-
             //Insert all of the ByteArrayClass
             int id = 0;
-            foreach (ByteArrayClass b in byteArrays)
+            foreach (var b in byteArrays)
             {
                 database.Insert(b);
                 if (b.bytes == null)
@@ -162,7 +160,7 @@ namespace SQLite.Net2.Tests
             Assert.AreNotEqual(0, id, "An ID wasn't set");
 
             //Get it back out
-            ByteArrayClass fetchedByteArray = database.Table<ByteArrayClass>().Where(x => x.bytes == criterion).First();
+            var fetchedByteArray = database.Table<ByteArrayClass>().FirstOrDefault(x => x.bytes == null);
 
             Assert.IsNotNull(fetchedByteArray);
             //Check they are the same

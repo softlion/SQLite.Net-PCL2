@@ -36,7 +36,7 @@ namespace SQLite.Net2
         /// <param name="data">Serialized object</param>
         /// <param name="type">Type of object</param>
         /// <returns>Deserialized object</returns>
-        object Deserialize(byte[] data, Type type);
+        object Deserialize(ReadOnlySpan<byte> data, Type type);
 
         bool CanDeserialize(Type type);
     }

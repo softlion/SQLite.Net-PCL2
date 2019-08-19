@@ -619,12 +619,12 @@ namespace SQLite.Net2
             }
             if (clrType == typeof (byte[]))
             {
-                return sqlite.ColumnByteArray(stmt, index);
+                return sqlite.ColumnByteArray(stmt, index).ToArray();
             }
             if (interfaces.Contains(typeof (ISerializable<byte[]>)))
             {
                 var value = sqlite.ColumnByteArray(stmt, index);
-                return _conn.Resolver.CreateObject(clrType, new object[] {value});
+                return _conn.Resolver.CreateObject(clrType, new object[] {value.ToArray()});
             }
             if (clrType == typeof (Guid))
             {

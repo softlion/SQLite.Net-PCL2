@@ -6,7 +6,7 @@ namespace SQLite.Net2
     {
         public delegate bool CanSerializeDelegate(Type type);
 
-        public delegate object DeserializeDelegate(byte[] data, Type type);
+        public delegate object DeserializeDelegate(ReadOnlySpan<byte> data, Type type);
 
         public delegate byte[] SerializeDelegate(object obj);
 
@@ -30,7 +30,7 @@ namespace SQLite.Net2
             return _serializeDelegate(obj);
         }
 
-        public object Deserialize(byte[] data, Type type)
+        public object Deserialize(ReadOnlySpan<byte> data, Type type)
         {
             return _deserializeDelegate(data, type);
         }

@@ -32,7 +32,7 @@ namespace SQLite.Net2
 
         public string SourceID()
         {
-            return raw.sqlite3_sourceid();
+            return raw.sqlite3_sourceid().utf8_to_string();
         }
 
         public Result EnableLoadExtension(IDbHandle db, int onoff)
@@ -117,7 +117,7 @@ namespace SQLite.Net2
         public string Errmsg16(IDbHandle db)
         {
             var internalDbHandle = (DbHandle)db;
-            return raw.sqlite3_errmsg(internalDbHandle.DbPtr);
+            return raw.sqlite3_errmsg(internalDbHandle.DbPtr).utf8_to_string();
         }
 
         public int BindParameterIndex(IDbStatement stmt, string name)
@@ -171,7 +171,7 @@ namespace SQLite.Net2
         public string ColumnName16(IDbStatement stmt, int index)
         {
             var internalStmt = (DbStatement)stmt;
-            return raw.sqlite3_column_name(internalStmt.StmtPtr, index);
+            return raw.sqlite3_column_name(internalStmt.StmtPtr, index).utf8_to_string();
         }
 
         public ColType ColumnType(IDbStatement stmt, int index)
@@ -201,10 +201,10 @@ namespace SQLite.Net2
         public string ColumnText16(IDbStatement stmt, int index)
         {
             var internalStmt = (DbStatement)stmt;
-            return raw.sqlite3_column_text(internalStmt.StmtPtr, index);
+            return raw.sqlite3_column_text(internalStmt.StmtPtr, index).utf8_to_string();
         }
 
-        public byte[] ColumnBlob(IDbStatement stmt, int index)
+        public ReadOnlySpan<byte> ColumnBlob(IDbStatement stmt, int index)
         {
             var internalStmt = (DbStatement)stmt;
             return raw.sqlite3_column_blob(internalStmt.StmtPtr, index);
@@ -216,7 +216,7 @@ namespace SQLite.Net2
             return raw.sqlite3_column_bytes(internalStmt.StmtPtr, index);
         }
 
-        public byte[] ColumnByteArray(IDbStatement stmt, int index)
+        public ReadOnlySpan<byte> ColumnByteArray(IDbStatement stmt, int index)
         {
             var internalStmt = (DbStatement)stmt;
             return raw.sqlite3_column_blob(internalStmt.StmtPtr, index);
