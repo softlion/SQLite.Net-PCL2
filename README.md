@@ -19,7 +19,7 @@ If you search a simple key value store based on sqlite, alternative to Akavache,
 
 * Netstandard 2.0 only
 * Uses SQLitePCLRaw for sqlite raw communication
-
+* Requires SQLitePCL.raw v2, make sure to read the release notes on the SQLitePCL project page
 
 # New Features compared to oysteinkrog
 
