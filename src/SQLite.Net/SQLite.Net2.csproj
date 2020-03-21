@@ -4,14 +4,49 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>SQLite.Net2</AssemblyName>
     <RootNamespace>SQLite.Net2</RootNamespace>
+
+    <DebugType>portable</DebugType>
+    <AssemblyProduct>SQLite.Net2</AssemblyProduct>
+    <AssemblyCopyright>Copyright ©2020 Benjamin Mayrargue</AssemblyCopyright>
+  </PropertyGroup>
+
+  <!--  nuget configurable properties -->
+  <PropertyGroup>
+    <Version>0.0.0-pre1</Version>
+    <VersionSuffix></VersionSuffix>
+    <DefineConstants>$(DefineConstants);</DefineConstants>
+    <NugetPackageId></NugetPackageId>
+  </PropertyGroup>
+
+
+  <!--  nuget properties -->
+  <PropertyGroup>
+    <PackageId>sqlite-net2</PackageId>
+    <!-- PackageIcon>icon.png</PackageIcon -->
+    <!--<PackageIconUrl>https://raw.githubusercontent.com/xamarin/Essentials/master/Assets/xamarin.essentials_128x128.png</PackageIconUrl>-->
+    <Summary>A netstandard client library to access SQLite database files in a LINQ manner.</Summary>
+    <PackageTags>sqlite, xamarin, android, ios, uwp, netstandard</PackageTags>
+    <Title>sqlite-net2 light ORM for SQLite</Title>
+    <Description>sqlite-net2 allows applications to manage data in SQLite databases using Entity Framework like queries, but much lighter</Description>
+    <Product>$(AssemblyName) ($(TargetFramework))</Product>
+    <VersionSuffix></VersionSuffix>
+    <PackageVersion>$(Version)$(VersionSuffix)</PackageVersion>
+    <Authors>Benjamin Mayrargue</Authors>
+    <Owners>Benjamin Mayrargue</Owners>
+    <NeutralLanguage>en</NeutralLanguage>
+    <RepositoryUrl>https://github.com/softlion/SQLite.Net-PCL2</RepositoryUrl>
+    <UseFullSemVerForNuGet>false</UseFullSemVerForNuGet>
+    <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <PackageProjectUrl>https://github.com/softlion/SQLite.Net-PCL2</PackageProjectUrl>
+    <PackageReleaseNotes>
+      https://github.com/softlion/SQLite.Net-PCL/commits
+    </PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Properties\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.0.2" />
+    <None Include="..\..\LICENSE.md" Pack="true" PackagePath="" />
   </ItemGroup>
 
 </Project>
