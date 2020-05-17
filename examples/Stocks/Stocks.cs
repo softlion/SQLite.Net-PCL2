@@ -38,6 +38,9 @@ namespace Stocks
 	{
 		public Database (string path) : base(path)
 		{
+			//Crypt database
+            Execute("PRAGMA key = 'snKJRLKOT4HD-QGmxBXaHTHWiZypllQvYHhbknmR';");
+
 			CreateTable<Stock> ();
 			CreateTable<Valuation> ();
 		}
