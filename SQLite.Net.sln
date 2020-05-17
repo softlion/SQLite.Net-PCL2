@@ -14,7 +14,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{5BD976
 		LICENSE.txt = LICENSE.txt
 		nuget\pack.ps1 = nuget\pack.ps1
 		README.md = README.md
-		nuget\sqlite-net2.nuspec = nuget\sqlite-net2.nuspec
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SQLite.Net2", "src\SQLite.Net\SQLite.Net2.csproj", "{FE454822-5982-4327-AE8D-26819659DC9A}"
