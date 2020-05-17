@@ -9,7 +9,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stocks", "examples\Stocks\S
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{5BD976ED-6E22-44A3-A5A1-D6C6633BAADD}"
 	ProjectSection(SolutionItems) = preProject
-		Appveyor.yml = Appveyor.yml
 		license.md = license.md
 		LICENSE.txt = LICENSE.txt
 		nuget\pack.ps1 = nuget\pack.ps1
