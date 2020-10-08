@@ -2,7 +2,8 @@
 
 Add this package to your netstandard project:
 
-[![NuGet](https://img.shields.io/nuget/v/sqlite-net2.svg)](https://www.nuget.org/packages/sqlite-net2/)
+[![NuGet](https://img.shields.io/nuget/v/sqlite-net2.svg)](https://www.nuget.org/packages/sqlite-net2/)  
+![Nuget](https://img.shields.io/nuget/dt/sqlite-net2)
 
 Also add one of the https://github.com/ericsink/SQLitePCL.raw package of your choice to the netstandard project:
 - SQLitePCLRaw.bundle_e_sqlite3 for a normal database file
