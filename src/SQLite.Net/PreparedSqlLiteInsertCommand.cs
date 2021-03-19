@@ -30,44 +30,28 @@ namespace SQLite.Net2
     /// </summary>
     public class PreparedSqlLiteInsertCommand : IDisposable
     {
-        private static readonly IDbStatement NullStatement = default(IDbStatement);
+        static readonly IDbStatement NullStatement = default(IDbStatement);
+        //static readonly object _locker = new object();
         readonly SqliteApi sqlite = SqliteApi.Instance;
-
-        internal PreparedSqlLiteInsertCommand(SQLiteConnection conn)
-        {
-            Connection = conn;
-        }
-
+        SQLiteConnection Connection { get; set; }
+        IDbStatement Statement { get; set; }
+        string commandText;
 
         public bool Initialized { get; set; }
 
-
-        public string CommandText { get; set; }
-
-
-        protected SQLiteConnection Connection { get; set; }
-
-
-        protected IDbStatement Statement { get; set; }
-
-
-        public void Dispose()
+        internal PreparedSqlLiteInsertCommand(SQLiteConnection conn, string commandText)
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
+            Connection = conn;
+            this.commandText = commandText;
         }
-
-        ~PreparedSqlLiteInsertCommand()
-        {
-            Dispose(false);
-        }
-
-        static readonly object _locker = new object();
-
 
         public int ExecuteNonQuery(object[] source)
         {
-            Connection.TraceListener.WriteLine("Executing: {0}", CommandText);
+            Connection.TraceListener.WriteLine("Executing: {0}", commandText);
+
+            if (Initialized && Statement == NullStatement)
+                throw new ObjectDisposedException(nameof(PreparedSqlLiteInsertCommand));
+
             if (!Initialized)
             {
                 Statement = Prepare();
@@ -82,7 +66,7 @@ namespace SQLite.Net2
             }
 
             Result r;
-            lock (_locker)
+            //lock (_locker)
             {
                 r = sqlite.Step(Statement);
             }
@@ -93,50 +77,56 @@ namespace SQLite.Net2
                 sqlite.Reset(Statement);
                 return rowsAffected;
             }
+            
             if (r == Result.Error)
             {
                 var msg = sqlite.Errmsg16(Connection.Handle);
                 sqlite.Reset(Statement);
                 throw new SQLiteException(r, msg);
             }
+            
             if (r == Result.Constraint && sqlite.ExtendedErrCode(Connection.Handle) == ExtendedResult.ConstraintNotNull)
             {
                 sqlite.Reset(Statement);
                 throw new NotNullConstraintViolationException(r, sqlite.Errmsg16(Connection.Handle));
             }
+            
             sqlite.Reset(Statement);
-
-            throw new SQLiteException(r, r.ToString());
+            throw new SQLiteException(r, sqlite.Errmsg16(Connection.Handle));
         }
 
 
-        protected virtual IDbStatement Prepare()
+        IDbStatement Prepare()
         {
             try
             {
-                var stmt = sqlite.Prepare2(Connection.Handle, CommandText);
+                var stmt = sqlite.Prepare2(Connection.Handle, commandText);
                 return stmt;
             }
             catch (Exception e)
             {
-                throw new Exception($"Sqlite prepareinsert failed for sql: {CommandText}", e);
+                throw new Exception($"Sqlite prepareinsert failed for sql: {commandText}", e);
             }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
         private void Dispose(bool disposing)
         {
-            if (Statement != NullStatement)
-            {
-                try
-                {
-                    sqlite.Finalize(Statement);
-                }
-                finally
-                {
-                    Statement = NullStatement;
-                    Connection = null;
-                }
-            }
+            var s = Statement;
+            Statement = NullStatement;
+            Connection = null;
+            if (s != NullStatement) 
+                sqlite.Finalize (s);
+        }
+
+        ~PreparedSqlLiteInsertCommand()
+        {
+            Dispose(false);
         }
     }
 }

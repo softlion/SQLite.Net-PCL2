@@ -8,6 +8,7 @@
     <DebugType>portable</DebugType>
     <AssemblyProduct>SQLite.Net2</AssemblyProduct>
     <AssemblyCopyright>Copyright ©2020 Benjamin Mayrargue</AssemblyCopyright>
+    <LangVersion>Latest</LangVersion>
   </PropertyGroup>
 
   <!--  nuget configurable properties -->
@@ -45,7 +46,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="SQLitePCLRaw.core" Version="2.0.3" />
+    <PackageReference Include="SQLitePCLRaw.core" Version="2.0.4" />
     <None Include="..\..\LICENSE.md" Pack="true" PackagePath="" />
   </ItemGroup>
 

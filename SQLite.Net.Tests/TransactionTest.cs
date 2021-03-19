@@ -125,5 +125,34 @@ namespace SQLite.Net2.Tests
 
             Assert.AreEqual(testObjects.Count - 1, db.Table<TestObj>().Count());
         }
+
+        
+        [Test]
+        public void FailSavepointTransactionException()
+        {
+            try
+            {
+                db.RunInTransaction(() =>
+                {
+                    throw new TransactionTestException();
+                });
+            }
+            catch(TransactionTestException)
+            {
+                return;
+            }
+
+            Assert.Fail("Incorrect exception thrown");
+        }
+
+                
+        [Test]
+        public void SuccesfulSavepointTransaction()
+        {
+            db.RunInTransaction(() =>
+            {
+                db.InsertOrReplaceAll(testObjects);
+            });
+        }
     }
 }

@@ -32,15 +32,12 @@ namespace SQLite.Net2
     public class TableMapping
     {
         private readonly Column _autoPk;
-        private Column[] _insertColumns;
+        private Column[] _insertColumns, _insertOrReplaceColumns;
 
 
 		public TableMapping(Type type, IEnumerable<PropertyInfo> properties, CreateFlags createFlags = CreateFlags.None, IColumnInformationProvider infoProvider = null)
         {
-			if (infoProvider == null)
-			{
-				infoProvider = new DefaultColumnInformationProvider ();
-			}
+			infoProvider ??= new DefaultColumnInformationProvider();
 
             MappedType = type;
 
@@ -56,35 +53,29 @@ namespace SQLite.Net2
 				var ignore = infoProvider.IsIgnored (p);
 
                 if (p.CanWrite && !ignore)
-                {
                     cols.Add(new Column(p, createFlags));
-                }
             }
             Columns = cols.ToArray();
             foreach (var c in Columns)
             {
                 if (c.IsAutoInc && c.IsPK)
-                {
                     _autoPk = c;
-                }
                 if (c.IsPK)
-                {
                     PKs.Add(c);
-                }
             }
 
             HasAutoIncPK = _autoPk != null;
 
             if (PK != null)
             {
-                GetByPrimaryKeySql = string.Format("select * from \"{0}\" where \"{1}\" = ?", TableName, PK.Name);
+                GetByPrimaryKeySql = $"select * from \"{TableName}\" where \"{PK.Name}\" = ?";
                 PkWhereSql = PKs.Aggregate(new StringBuilder(), (sb, pk) => sb.AppendFormat(" \"{0}\" = ? and", pk.Name), sb => sb.Remove(sb.Length - 3, 3).ToString());
-                GetByPrimaryKeysSql = String.Format("select * from \"{0}\" where {1}", TableName, PkWhereSql);
+                GetByPrimaryKeysSql = $"select * from \"{TableName}\" where {PkWhereSql}";
             }
             else
             {
                 // People should not be calling Get/Find without a PK
-                GetByPrimaryKeysSql = GetByPrimaryKeySql = string.Format("select * from \"{0}\" limit 1", TableName);
+                GetByPrimaryKeysSql = GetByPrimaryKeySql = $"select * from \"{TableName}\" limit 1";
             }
         }
 
@@ -98,72 +89,38 @@ namespace SQLite.Net2
         }
 
 
-        public string GetByPrimaryKeysSqlForPartialKeys(int numberOfKeys)
-        {
-            return String.Format("select * from \"{0}\" where {1}", TableName, PkWhereSqlForPartialKeys(numberOfKeys));
-        }
+        public string GetByPrimaryKeysSqlForPartialKeys(int numberOfKeys) 
+            => $"select * from \"{TableName}\" where {PkWhereSqlForPartialKeys(numberOfKeys)}";
+
+        public readonly List<Column> PKs = new();
 
 
+        public Type MappedType { get; }
+        public string TableName { get; }
+        public Column[] Columns { get; }
+        public Column PK => PKs.FirstOrDefault();
+        public string GetByPrimaryKeySql { get; }
+        public string GetByPrimaryKeysSql { get; }
+        public string PkWhereSql { get; }
+        public bool HasAutoIncPK { get; }
 
-        public Type MappedType { get; private set; }
-
-
-        public string TableName { get; private set; }
-
-
-        public Column[] Columns { get; private set; }
-
-
-        public Column PK { get { return PKs.FirstOrDefault(); } }
-
-
-        public readonly List<Column> PKs = new List<Column>();
-
-
-        public string GetByPrimaryKeySql { get; private set; }
-
-
-        public string GetByPrimaryKeysSql { get; private set; }
-
-
-        public string PkWhereSql { get; private set; }
-
-
-        public bool HasAutoIncPK { get; private set; }
-
-
-        public Column[] InsertColumns
-        {
-            get { return _insertColumns ?? (_insertColumns = Columns.Where(c => !c.IsAutoInc).ToArray()); }
-        }
+        public Column[] InsertColumns => _insertColumns ??= Columns.Where(c => !c.IsAutoInc).ToArray();
+        public Column[] InsertOrReplaceColumns  => _insertOrReplaceColumns  ??= Columns.ToArray();
 
 
         public void SetAutoIncPK(object obj, long id)
-        {
-            if (_autoPk != null)
-            {
-                _autoPk.SetValue(obj, Convert.ChangeType(id, _autoPk.ColumnType, null));
-            }
-        }
+            => _autoPk?.SetValue(obj, Convert.ChangeType(id, _autoPk.ColumnType, null));
 
 
         public Column FindColumnWithPropertyName(string propertyName)
-        {
-            var exact = Columns.FirstOrDefault(c => c.PropertyName == propertyName);
-            return exact;
-        }
+            => Columns.FirstOrDefault(c => c.PropertyName == propertyName);
 
 
         public Column FindColumn(string columnName)
-        {
-            var exact = Columns.FirstOrDefault(c => c.Name == columnName);
-            return exact;
-        }
+            => Columns.FirstOrDefault(c => c.Name == columnName);
 
         public Column CreateColumn(Type columnType)
-        {
-            return new Column { ColumnType = columnType };
-        }
+            => new Column { ColumnType = columnType };
 
         public class Column
         {
@@ -176,10 +133,7 @@ namespace SQLite.Net2
     
             public Column(PropertyInfo prop, CreateFlags createFlags = CreateFlags.None, IColumnInformationProvider infoProvider = null)
             {
-				if (infoProvider == null)
-				{
-					infoProvider = new DefaultColumnInformationProvider();
-				}
+				infoProvider ??= new DefaultColumnInformationProvider();
 
                 _prop = prop;
 		Name = infoProvider.GetColumnName(prop);
@@ -211,47 +165,23 @@ namespace SQLite.Net2
             }
 
     
-            public string Name { get; private set; }
-
-    
-            public string PropertyName
-            {
-                get { return _prop.Name; }
-            }
-
-    
+            public string Name { get; }
+            public string PropertyName => _prop.Name;
             public Type ColumnType { get; internal set; }
-
-    
-            public string Collation { get; private set; }
-
-    
-            public bool IsAutoInc { get; private set; }
-
-    
-            public bool IsAutoGuid { get; private set; }
-
-    
-            public bool IsPK { get; private set; }
-
-    
+            public string Collation { get; }
+            public bool IsAutoInc { get; }
+            public bool IsAutoGuid { get; }
+            public bool IsPK { get; }
             public IEnumerable<IndexedAttribute> Indices { get; set; }
-
-    
-            public bool IsNullable { get; private set; }
-
-    
-            public int? MaxStringLength { get; private set; }
-
-    
-            public object DefaultValue { get; private set; }
+            public bool IsNullable { get; }
+            public int? MaxStringLength { get; }
+            public object DefaultValue { get; }
 
             /// <summary>
             ///     Set column value.
             /// </summary>
             /// <param name="obj"></param>
             /// <param name="val"></param>
-    
             public void SetValue(object obj, object val)
             {
                 var propType = _prop.PropertyType;

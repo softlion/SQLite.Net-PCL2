@@ -45,6 +45,15 @@ namespace SQLite.Net2
 			set { _columnInformationProvider = value; }
 		}
 
+        public static Type GetObjType(object obj)
+        {
+            if (obj == null)
+                return typeof(object);
+            if (obj is IReflectableType rt)
+                return rt.GetTypeInfo().AsType();
+            return obj.GetType();
+        }
+
         internal static string SqlDecl(TableMapping.Column p, bool storeDateTimeAsTicks, IBlobSerializer serializer,
             IDictionary<Type, string> extraTypeMappings)
         {

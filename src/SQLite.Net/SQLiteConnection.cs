@@ -27,6 +27,7 @@
 
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -58,7 +59,6 @@ namespace SQLite.Net2
 		private readonly object _tableMappingsLocks;
         private TimeSpan _busyTimeout;
         private long _elapsedMilliseconds;
-        private IDictionary<TableMapping, ActiveInsertCommand> _insertCommandCache;
         private bool _open;
         private Stopwatch _sw;
         private int _transactionDepth;
@@ -1031,6 +1031,7 @@ namespace SQLite.Net2
         /// <summary>
         ///     Creates a savepoint in the database at the current point in the transaction timeline.
         ///     Begins a new transaction if one is not in progress.
+        /// 
         ///     Call <see cref="RollbackTo" /> to undo transactions since the returned savepoint.
         ///     Call <see cref="Release" /> to commit transactions after the savepoint returned here.
         ///     Call <see cref="Commit" /> to end the transaction, committing all changes.
@@ -1047,8 +1048,7 @@ namespace SQLite.Net2
             }
             catch (Exception ex)
             {
-                var sqlExp = ex as SQLiteException;
-                if (sqlExp != null)
+                if (ex is SQLiteException sqlExp)
                 {
                     // It is recommended that applications respond to the errors listed below 
                     //    by explicitly issuing a ROLLBACK command.
@@ -1150,21 +1150,21 @@ namespace SQLite.Net2
             var firstLen = savePoint.IndexOf('D');
             if (firstLen >= 2 && savePoint.Length > firstLen + 1)
             {
-                int depth;
-                if (int.TryParse(savePoint.Substring(firstLen + 1), out depth))
+                if (int.TryParse(savePoint.Substring(firstLen + 1), out var depth) && depth >= 0)
                 {
                     // TODO: Mild race here, but inescapable without locking almost everywhere.
-                    if (0 <= depth && depth < _transactionDepth)
+                    if (depth < _transactionDepth)
                     {
                         Volatile.Write(ref _transactionDepth, depth);
                         Execute(cmd + savePoint);
                         return;
                     }
+                
+                    throw new ArgumentException($"savePoint '{savePoint}' is not valid: depth {depth} >= transactionDepth {_transactionDepth}", nameof(savePoint));
                 }
             }
 
-            throw new ArgumentException(
-                "savePoint is not valid, and should be the result of a call to SaveTransactionPoint.", "savePoint");
+            throw new ArgumentException($"savePoint '{savePoint}' is not valid, and should be the result of a call to SaveTransactionPoint.", nameof(savePoint));
         }
 
         /// <summary>
@@ -1323,7 +1323,7 @@ namespace SQLite.Net2
             if (obj == null) {
                 return 0;
             }
-            return Insert (obj, "OR IGNORE", obj.GetType ());
+            return Insert (obj, "OR IGNORE", Orm.GetObjType(obj));
         }
 
         public int InsertOrIgnore (object obj, Type objType)
@@ -1347,7 +1347,7 @@ namespace SQLite.Net2
             {
                 return 0;
             }
-            return Insert(obj, "", obj.GetType());
+            return Insert(obj, "", Orm.GetObjType(obj));
         }
 
         /// <summary>
@@ -1369,7 +1369,7 @@ namespace SQLite.Net2
             {
                 return 0;
             }
-            return Insert(obj, "OR REPLACE", obj.GetType());
+            return Insert(obj, "OR REPLACE", Orm.GetObjType(obj));
         }
 
         /// <summary>
@@ -1486,26 +1486,26 @@ namespace SQLite.Net2
             {
                 return 0;
             }
-            return Insert(obj, extra, obj.GetType());
+            return Insert(obj, extra, Orm.GetObjType(obj));
         }
 
         /// <summary>
-        ///     Inserts the given object and retrieves its
-        ///     auto incremented primary key if it has one.
+        /// Inserts the given object and retrieves its
+        /// auto incremented primary key if it has one.
+        /// The return value is the number of rows added to the table.
         /// </summary>
         /// <param name="obj">
-        ///     The object to insert.
+        /// The object to insert.
         /// </param>
         /// <param name="extra">
-        ///     Literal SQL code that gets placed into the command. INSERT {extra} INTO ...
+        /// Literal SQL code that gets placed into the command. INSERT {extra} INTO ...
         /// </param>
         /// <param name="objType">
-        ///     The type of object to insert.
+        /// The type of object to insert.
         /// </param>
         /// <returns>
-        ///     The number of rows added to the table.
+        /// The number of rows added to the table.
         /// </returns>
-
         public int Insert(object obj, string extra, Type objType)
         {
             if (obj == null || objType == null)
@@ -1532,23 +1532,25 @@ namespace SQLite.Net2
             var cols = replacing ? map.Columns : map.InsertColumns;
             var vals = new object[cols.Length];
             for (var i = 0; i < vals.Length; i++)
-            {
                 vals[i] = cols[i].GetValue(obj);
-            }
 
             var insertCmd = GetInsertCommand(map, extra);
             int count;
-            try
+
+            lock (insertCmd)
             {
-                count = insertCmd.ExecuteNonQuery(vals);
-            }
-            catch (SQLiteException ex)
-            {
-                if (sqlite.ExtendedErrCode(Handle) == ExtendedResult.ConstraintNotNull)
+                // We lock here to protect the prepared statement returned via GetInsertCommand.
+                // A SQLite prepared statement can be bound for only one operation at a time.
+                try
                 {
-                    throw new NotNullConstraintViolationException(ex.Result, ex.Message, map, obj);
+                    count = insertCmd.ExecuteNonQuery(vals);
                 }
-                throw;
+                catch (SQLiteException ex)
+                {
+                    if (sqlite.ExtendedErrCode(Handle) == ExtendedResult.ConstraintNotNull)
+                        throw new NotNullConstraintViolationException(ex.Result, ex.Message, map, obj);
+                    throw;
+                }
             }
 
             if (map.HasAutoIncPK)
@@ -1557,24 +1559,53 @@ namespace SQLite.Net2
                 map.SetAutoIncPK(obj, id);
             }
 
+            //if (count > 0)
+            //    OnTableChanged (map, NotifyTableChangedAction.Insert);
+
             return count;
         }
 
+        readonly ConcurrentDictionary<(string MappedTypeFullName, string Extra), PreparedSqlLiteInsertCommand> _insertCommandMap = new ();
+
         private PreparedSqlLiteInsertCommand GetInsertCommand(TableMapping map, string extra)
         {
-            ActiveInsertCommand cmd;
-            if (_insertCommandCache == null)
+            var key = (map.MappedType.FullName, extra);
+
+            if (!_insertCommandMap.TryGetValue(key, out var prepCmd))
             {
-                _insertCommandCache = new Dictionary<TableMapping, ActiveInsertCommand>();
+                prepCmd = CreateInsertCommand(map, extra);
+                //var cmd = new ActiveInsertCommand(map);
+                //prepCmd = cmd.GetCommand(this, extra);
+                if (!_insertCommandMap.TryAdd(key, prepCmd))
+                {
+                    prepCmd.Dispose();
+                    //cmd.Dispose();
+                    prepCmd = _insertCommandMap[key];
+                }
             }
 
-            if (!_insertCommandCache.TryGetValue(map, out cmd))
+            return prepCmd;
+        }
+
+        PreparedSqlLiteInsertCommand CreateInsertCommand(TableMapping map, string extra)
+        {
+            var cols = map.InsertColumns;
+            string insertSql;
+            if (cols.Length == 0 && map.Columns.Length == 1 && map.Columns[0].IsAutoInc)
+                insertSql = string.Format("insert {1} into \"{0}\" default values", map.TableName, extra);
+            else
             {
-                cmd = new ActiveInsertCommand(map);
-                _insertCommandCache[map] = cmd;
+                var replacing = string.Compare(extra, "OR REPLACE", StringComparison.OrdinalIgnoreCase) == 0;
+
+                if (replacing)
+                    cols = map.InsertOrReplaceColumns;
+
+                insertSql = string.Format("insert {3} into \"{0}\"({1}) values ({2})", map.TableName,
+                    string.Join(",", (from c in cols select "\"" + c.Name + "\"").ToArray()),
+                    string.Join(",", (from c in cols select "?").ToArray()), extra);
             }
 
-            return cmd.GetCommand(this, extra);
+            return new PreparedSqlLiteInsertCommand(this, insertSql);
         }
 
         /// <summary>
@@ -1595,7 +1626,7 @@ namespace SQLite.Net2
             {
                 return 0;
             }
-            return Update(obj, obj.GetType());
+            return Update(obj, Orm.GetObjType(obj));
         }
 
         /// <summary>
@@ -1871,16 +1902,13 @@ namespace SQLite.Net2
 
         public async Task<string> CreateDatabaseBackup()
         {
-            string destDBPath = this.DatabasePath + "." + DateTime.UtcNow.ToString("yyyy-MM-dd_HH-mm-ss-fff");
+            var destDBPath = this.DatabasePath + "." + DateTime.UtcNow.ToString("yyyy-MM-dd_HH-mm-ss-fff");
 
-            IDbHandle destDB;
-            Result r = sqlite.Open(destDBPath, out destDB,
+            var r = sqlite.Open(destDBPath, out var destDB,
                 (int) (SQLiteOpenFlags.Create | SQLiteOpenFlags.ReadWrite), null);
 
             if (r != Result.OK)
-            {
                 throw new SQLiteException(r, String.Format("Could not open backup database file: {0} ({1})", destDBPath, r));
-            }
 
             /* Open the backup object used to accomplish the transfer */
             IDbBackupHandle bHandle = sqlite.BackupInit(destDB, "main", this.Handle, "main");
@@ -1893,10 +1921,10 @@ namespace SQLite.Net2
                 throw new SQLiteException(r, String.Format("Could not initiate backup process: {0}", destDBPath));
             }
 
-            /* Each iteration of this loop copies 5 database pages from database
-            ** pDb to the backup database. If the return value of backup_step()
-            ** indicates that there are still further pages to copy, sleep for
-            ** 250 ms before repeating. */
+            // Each iteration of this loop copies 5 database pages from database
+            // pDb to the backup database. If the return value of backup_step()
+            // indicates that there are still further pages to copy, sleep for
+            // 250 ms before repeating.
             do
             {
                 r = sqlite.BackupStep(bHandle, 5);
@@ -1907,7 +1935,7 @@ namespace SQLite.Net2
                 }
             } while (r == Result.OK || r == Result.Busy || r == Result.Locked);
 
-            /* Release resources allocated by backup_init(). */
+            // Release resources allocated by backup_init().
             r = sqlite.BackupFinish(bHandle);
 
             if (r != Result.OK)
@@ -1945,13 +1973,10 @@ namespace SQLite.Net2
             {
                 try
                 {
-                    if (_insertCommandCache != null)
-                    {
-                        foreach (var sqlInsertCommand in _insertCommandCache.Values)
-                        {
-                            sqlInsertCommand.Dispose();
-                        }
-                    }
+                    foreach (var sqlInsertCommand in _insertCommandMap.Values)
+                        sqlInsertCommand.Dispose();
+                    _insertCommandMap.Clear();
+
                     var r = sqlite.Close(Handle);
                     if (r != Result.OK)
                     {
