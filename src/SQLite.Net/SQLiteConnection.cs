@@ -1574,12 +1574,9 @@ namespace SQLite.Net2
             if (!_insertCommandMap.TryGetValue(key, out var prepCmd))
             {
                 prepCmd = CreateInsertCommand(map, extra);
-                //var cmd = new ActiveInsertCommand(map);
-                //prepCmd = cmd.GetCommand(this, extra);
                 if (!_insertCommandMap.TryAdd(key, prepCmd))
                 {
                     prepCmd.Dispose();
-                    //cmd.Dispose();
                     prepCmd = _insertCommandMap[key];
                 }
             }
