@@ -11,7 +11,7 @@ Also add one of the https://github.com/ericsink/SQLitePCL.raw package of your ch
 
 And call this statup function in each of your platform projects:
 
-```
+```csharp
 SQLitePCL.Batteries_V2.Init()
 ```
 
