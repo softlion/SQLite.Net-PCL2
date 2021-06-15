@@ -168,3 +168,16 @@ The T in `db.Query<T>` specifies the object to create for each row. It can be a 
     	return db.Query<Val> ("select 'Price' as 'Money', 'Time' as 'Date' from Valuation where StockId = ?", stock.Id);
     }
 ```
+
+## Encrypting the database file
+
+Add the nuget `SQLitePCLRaw.bundle_e_sqlcipher` to your project containing `sqlite-net2`.
+
+Call this right after opening or creating the db, as the 1st instruction.
+
+```
+var db = new SQLiteConnection(filePath);
+db.Execute($"PRAGMA key = '{key}';");
+```
+
+And use the db as usual.
