@@ -28,7 +28,7 @@ For a simple key/value store based on sqlite, or a drop-in replacement (alternat
 
 * Multiple primary key support		
  Ex: 		
- ```		
+ ```csharp		
      public class PrivacyGroupItem		
      {		
  		[PrimaryKey]		
