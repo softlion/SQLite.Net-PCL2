@@ -175,7 +175,7 @@ Add the nuget `SQLitePCLRaw.bundle_e_sqlcipher` to your project containing `sqli
 
 Call this right after opening or creating the db, as the 1st instruction.
 
-```
+```csharp
 var db = new SQLiteConnection(filePath);
 db.Execute($"PRAGMA key = '{key}';");
 ```
