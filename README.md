@@ -11,7 +11,7 @@ Also add one of the https://github.com/ericsink/SQLitePCL.raw package of your ch
 
 And call this statup function in each of your platform projects:
 
-```
+```csharp
 SQLitePCL.Batteries_V2.Init()
 ```
 
@@ -28,7 +28,7 @@ For a simple key/value store based on sqlite, or a drop-in replacement (alternat
 
 * Multiple primary key support		
  Ex: 		
- ```		
+ ```csharp		
      public class PrivacyGroupItem		
      {		
  		[PrimaryKey]		
@@ -168,3 +168,16 @@ The T in `db.Query<T>` specifies the object to create for each row. It can be a 
     	return db.Query<Val> ("select 'Price' as 'Money', 'Time' as 'Date' from Valuation where StockId = ?", stock.Id);
     }
 ```
+
+## Encrypting the database file
+
+Add the nuget `SQLitePCLRaw.bundle_e_sqlcipher` to your project containing `sqlite-net2`.
+
+Call this right after opening or creating the db, as the 1st instruction.
+
+```csharp
+var db = new SQLiteConnection(filePath);
+db.Execute($"PRAGMA key = '{key}';");
+```
+
+And use the db as usual.
