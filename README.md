@@ -177,9 +177,18 @@ Then add this code right after opening or creating the db, and before any other 
 ```c#
 string key = "yourCryptingKey";
 var db = new SQLiteConnection(filePath);
-var ok = db.Execute<string>($"PRAGMA key = '{key}';");
+var ok = db.ExecuteScalar<string>($"PRAGMA key = '{key}';");
 if(ok != "ok")
    throw new Exception("Bad key");
 ```
 
 Then use the db as usual.
+
+You can read the version of the cypher lib using the code. Check the [Zenetik](//https://www.zetetic.net/sqlcipher/sqlcipher-api/#cipher_version) website for more information.
+
+```c#
+var cipherVer = db.ExecuteScalar<string>("PRAGMA cipher_version");
+if (String.IsNullOrWhiteSpace(cipherVer))
+    throw new Exception("This build is not using SQL CIPHER");
+```
+ 
