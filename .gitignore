@@ -13,3 +13,4 @@ TestResults
 /SQLite.Net.sln.ide
 /.vs
 /nuget/SQLite.Net*
+/.idea

@@ -1,7 +1,7 @@
 //
 // Copyright (c) 2012 Krueger Systems, Inc.
-// Copyright (c) 2013 Øystein Krog (oystein.krog@gmail.com)
-// Copyright (c) 2014 Benjamin Mayrarague
+// Copyright (c) 2013 Oystein Krog (oystein.krog@gmail.com)
+// Copyright (c) 2014 Benjamin Mayrargue
 //   - support for new types: XElement, TimeSpan
 //   - ExecuteSimpleQuery
 //   - ExecuteDeferredQuery: support primitive types in T
@@ -63,24 +63,23 @@ namespace SQLite.Net2
             var stmt = Prepare();
             var r = sqlite.Step(stmt);
             Finalize(stmt);
-            if (r == Result.Done)
+            switch (r)
             {
-                var rowsAffected = sqlite.Changes(_conn.Handle);
-                return rowsAffected;
-            }
-            if (r == Result.Error)
-            {
-                var msg = sqlite.Errmsg16(_conn.Handle);
-                throw new SQLiteException(r, msg);
-            }
-            if (r == Result.Constraint)
-            {
-                if (sqlite.ExtendedErrCode(_conn.Handle) == ExtendedResult.ConstraintNotNull)
+                case Result.Done or Result.Row:
                 {
-                    throw new NotNullConstraintViolationException(r, sqlite.Errmsg16(_conn.Handle));
+                    var rowsAffected = sqlite.Changes(_conn.Handle);
+                    return rowsAffected;
                 }
+                case Result.Error:
+                {
+                    var msg = sqlite.Errmsg16(_conn.Handle);
+                    throw new SQLiteException(r, msg);
+                }
+                case Result.Constraint when sqlite.ExtendedErrCode(_conn.Handle) == ExtendedResult.ConstraintNotNull:
+                    throw new NotNullConstraintViolationException(r, sqlite.Errmsg16(_conn.Handle));
+                default:
+                    throw new SQLiteException(r, r.ToString());
             }
-            throw new SQLiteException(r, r.ToString());
         }
 
 

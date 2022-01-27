@@ -1,21 +1,19 @@
 # Setup
 
-Add this package to your netstandard project:
+Add this package to a netstandard compatible project:
 
 [![NuGet](https://img.shields.io/nuget/v/sqlite-net2.svg)](https://www.nuget.org/packages/sqlite-net2/)  
 ![Nuget](https://img.shields.io/nuget/dt/sqlite-net2)
 
-Also add one of the https://github.com/ericsink/SQLitePCL.raw package of your choice to the netstandard project:
-- SQLitePCLRaw.bundle_e_sqlite3 for a normal database file
-- SQLitePCLRaw.bundle_e_sqlcipher for a crypted database file
+**Required**: add ONLY ONE of the followin packages to your common project:
+- [SQLitePCLRaw.bundle_e_sqlite3](https://www.nuget.org/packages/SQLitePCLRaw.bundle_e_sqlite3) for a normal database file
+- [SQLitePCLRaw.bundle_e_sqlcipher](https://www.nuget.org/packages/SQLitePCLRaw.bundle_e_sqlcipher) for an encrypted database file
 
-And call this statup function in each of your platform projects:
+Then call the init method once. That can be in your App.cs:
 
-```csharp
+ ```c#		
 SQLitePCL.Batteries_V2.Init()
 ```
-
-For a simple key/value store based on sqlite, or a drop-in replacement (alternative) to the unstable Akavache, check https://github.com/softlion/KeyValueLite
 
 # Features
 
@@ -24,22 +22,24 @@ For a simple key/value store based on sqlite, or a drop-in replacement (alternat
 * Compatible with SQLitePCLRaw standard and cypher
 * Stable and used in tons of apps
 
+For a key/value store based on sqlite, or a drop-in replacement (alternative) to the unstable Akavache, check [KeyValueLite](https://github.com/softlion/KeyValueLite)
+
 # Other Features (compared to oysteinkrog)
 
 * Multiple primary key support		
  Ex: 		
- ```csharp		
-     public class PrivacyGroupItem		
-     {		
- 		[PrimaryKey]		
- 		public int GroupId {get;set;}		
- 		
- 		[PrimaryKey]		
- 		public int ContactId {get;set;}		
-     }		
- 		
-     db.Delete<PrivacyGroupItem>(groupId, contactId);		
- ```		
+ ```c#		
+ public class PrivacyGroupItem		
+ {		
+    [PrimaryKey]		
+    public int GroupId {get;set;}		
+    
+    [PrimaryKey]		
+    public int ContactId {get;set;}		
+ }		
+    
+ db.Delete<PrivacyGroupItem>(groupId, contactId);		
+ ```
  		
 * Projections now have the expected result type		
  Ex: `IEnumerable<int> ids = from pgi in db.Table<PrivacyGroupItem>() where pgi.PrivacyGroupId == groupId select pgi.ContactId;`		
@@ -64,7 +64,7 @@ Note: see unit tests for more examples.
 
 ## Define the database schema using a code first approach.
 
-```csharp
+```c#
     public class DbStock
     {
     	[PrimaryKey, AutoIncrement]
@@ -92,7 +92,7 @@ Note: see unit tests for more examples.
 
 ## Create the schema
 
-```csharp
+```c#
     var dbFilePath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
     dbFilePath = Path.Combine(dbFilePath, "store.db3");
     var exists = File.Exists(dbFilePath);
@@ -122,7 +122,7 @@ Note: see unit tests for more examples.
 
 Simple add, update and delete:
 
-```csharp
+```c#
     var stock = new DbStock() { Symbol = "EUR" };
     db.Insert(stock);
     stock.Symbol = "USD";
@@ -140,7 +140,7 @@ After the Insert call, stock.Id will be set, because Id has the AutoIncrement at
 
 Simple query using LINQ. Most linq operators work:
 
-```csharp
+```c#
     var stocksStartingWithA = db.Table<DbStock>()
                 .Where(stock => stock.Symbol.StartsWith("A"))
                 .OrderBy(stock => stock.Symbol)
@@ -151,14 +151,14 @@ Simple query using LINQ. Most linq operators work:
 
 Advanced queries using SQL:
 
-```csharp
+```c#
     var dbValuation = db.Query<DbValuation> ("select * from DbValuation where StockId = ?", stock.Id);
     db.Execute("delete * from DbValuation where StockId = ?", stock.Id);
 ```
 
 The T in `db.Query<T>` specifies the object to create for each row. It can be a table class, or any other class whose public properties match the query columns.
 
-```csharp
+```c#
     public class Val {
     	public decimal Money { get; set; }
     	public DateTime Date { get; set; }
@@ -169,15 +169,17 @@ The T in `db.Query<T>` specifies the object to create for each row. It can be a 
     }
 ```
 
-## Encrypting the database file
+## Using an encrypted database file
 
-Add the nuget `SQLitePCLRaw.bundle_e_sqlcipher` to your project containing `sqlite-net2`.
+Add the nuget [SQLitePCLRaw.bundle_e_sqlcipher](https://www.nuget.org/packages/SQLitePCLRaw.bundle_e_sqlcipher) to your common project.  
+Then add this code right after opening or creating the db, and before any other db call:
 
-Call this right after opening or creating the db, as the 1st instruction.
-
-```csharp
+```c#
+string key = "yourCryptingKey";
 var db = new SQLiteConnection(filePath);
-db.Execute($"PRAGMA key = '{key}';");
+var ok = db.Execute<string>($"PRAGMA key = '{key}';");
+if(ok != "ok")
+   throw new Exception("Bad key");
 ```
 
-And use the db as usual.
+Then use the db as usual.

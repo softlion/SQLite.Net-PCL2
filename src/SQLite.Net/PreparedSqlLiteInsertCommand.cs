@@ -45,7 +45,7 @@ namespace SQLite.Net2
             this.commandText = commandText;
         }
 
-        public int ExecuteNonQuery(object[] source)
+        public int ExecuteNonQuery(object[]? source)
         {
             Connection.TraceListener.WriteLine("Executing: {0}", commandText);
 
@@ -71,28 +71,27 @@ namespace SQLite.Net2
                 r = sqlite.Step(Statement);
             }
 
-            if (r == Result.Done)
+            switch (r)
             {
-                var rowsAffected = sqlite.Changes(Connection.Handle);
-                sqlite.Reset(Statement);
-                return rowsAffected;
+                case Result.Done or Result.Row:
+                {
+                    var rowsAffected = sqlite.Changes(Connection.Handle);
+                    sqlite.Reset(Statement);
+                    return rowsAffected;
+                }
+                case Result.Error:
+                {
+                    var msg = sqlite.Errmsg16(Connection.Handle);
+                    sqlite.Reset(Statement);
+                    throw new SQLiteException(r, msg);
+                }
+                case Result.Constraint when sqlite.ExtendedErrCode(Connection.Handle) == ExtendedResult.ConstraintNotNull:
+                    sqlite.Reset(Statement);
+                    throw new NotNullConstraintViolationException(r, sqlite.Errmsg16(Connection.Handle));
+                default:
+                    sqlite.Reset(Statement);
+                    throw new SQLiteException(r, sqlite.Errmsg16(Connection.Handle));
             }
-            
-            if (r == Result.Error)
-            {
-                var msg = sqlite.Errmsg16(Connection.Handle);
-                sqlite.Reset(Statement);
-                throw new SQLiteException(r, msg);
-            }
-            
-            if (r == Result.Constraint && sqlite.ExtendedErrCode(Connection.Handle) == ExtendedResult.ConstraintNotNull)
-            {
-                sqlite.Reset(Statement);
-                throw new NotNullConstraintViolationException(r, sqlite.Errmsg16(Connection.Handle));
-            }
-            
-            sqlite.Reset(Statement);
-            throw new SQLiteException(r, sqlite.Errmsg16(Connection.Handle));
         }
 
 
