@@ -6,8 +6,8 @@ if ($IsMacOS) {
     $msbuild = & $vswhere -latest -products * -requires Microsoft.Component.MSBuild -property installationPath
     $msbuild = join-path $msbuild 'MSBuild\Current\Bin\MSBuild.exe'
 }
-$version="2.0.7"
-$versionSuffix=""
+$version="2.1.0"
+$versionSuffix="-pre1"
 
 #####################
 #Build release config

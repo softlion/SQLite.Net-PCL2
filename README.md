@@ -5,7 +5,7 @@ Add this package to a netstandard compatible project:
 [![NuGet](https://img.shields.io/nuget/v/sqlite-net2.svg)](https://www.nuget.org/packages/sqlite-net2/)  
 ![Nuget](https://img.shields.io/nuget/dt/sqlite-net2)
 
-**Required**: add ONLY ONE of the followin packages to your common project:
+**Required**: add ONLY ONE of the following packages to your common project:
 - [SQLitePCLRaw.bundle_e_sqlite3](https://www.nuget.org/packages/SQLitePCLRaw.bundle_e_sqlite3) for a normal database file
 - [SQLitePCLRaw.bundle_e_sqlcipher](https://www.nuget.org/packages/SQLitePCLRaw.bundle_e_sqlcipher) for an encrypted database file
 
@@ -49,7 +49,7 @@ For a key/value store based on sqlite, or a drop-in replacement (alternative) to
  Usage: `ExecuteSimpleQuery<string>("select 'drop table ' || name || ';' from sqlite_master where type = 'table'")`		
 
 * No asynchronous API. Use Task.Run() if you want asynchronous calls.  
-Note that while SQLitePCLRaw states that the database can be accessed by mutiple threads simultaneously, experience proves that you should always prevent multithread access, otherwise rare random crash occur. You can use `SemaphoreSlim` to serialize calls.
+Note that while SQLitePCLRaw states that the database can be accessed by multiple threads simultaneously, experience proves that you should always prevent multithreaded access, otherwise rare random crash occur. You can use `SemaphoreSlim` to serialize calls.
 
 * Another trick  
 Use transactions! In sqlite they speed up all queries a lot.
@@ -192,3 +192,33 @@ if (String.IsNullOrWhiteSpace(cipherVer))
     throw new Exception("This build is not using SQL CIPHER");
 ```
  
+## Using transactions
+
+Warning: all transactions methods create a state in this connection (the transaction depth).    
+Be sure to not share the connection with other simultaneous threads.
+
+Especially these methods create by default an implicit transaction:  
+`InsertAll(), InsertOrUpdateAll(), ReplaceAll()`  
+They all have a boolean parameter to disable the implicit transaction (beware of performances).
+
+Standard transaction:
+```c#
+BeginTransaction();
+...
+Commit(); 
+//or 
+Rollback();
+```
+
+Nested transactions:
+```c#
+var savepoint=SaveTransactionPoint();
+...
+Release(savepoint);
+//or
+RollbackTo(savepoint);
+```
+
+## Limitations
+
+Most databases (except SQLServer) store DateTimeOffset as UTC, forgetting the offset part. SQlite is not an exception.

@@ -143,11 +143,7 @@ namespace SQLite.Net2.Tests
         [Test]
         public void InsertAllSuccessInsideTransaction()
         {
-            List<UniqueObj> testObjects = Enumerable.Range(1, 20).Select(i => new UniqueObj
-            {
-                Id = i
-            }).ToList();
-
+            var testObjects = Enumerable.Range(1, 20).Select(i => new UniqueObj { Id = i }).ToList();
             _db.RunInTransaction(() => { _db.InsertAll(testObjects); });
 
             Assert.AreEqual(testObjects.Count, _db.Table<UniqueObj>().Count());

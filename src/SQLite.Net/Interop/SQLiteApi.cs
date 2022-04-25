@@ -222,6 +222,15 @@ namespace SQLite.Net2
             return raw.sqlite3_column_blob(internalStmt.StmtPtr, index);
         }
 
+        /// <summary>
+        /// http://www.sqlite.org/c3ref/get_autocommit.html
+        /// </summary>
+        public int GetAutoCommit(IDbHandle db)
+        {
+            var internalDbHandle = (DbHandle)db;
+            return raw.sqlite3_get_autocommit(internalDbHandle.DbPtr);
+        }
+
         #region Backup
 
         public IDbBackupHandle BackupInit(IDbHandle destHandle, string destName, IDbHandle srcHandle, string srcName)
