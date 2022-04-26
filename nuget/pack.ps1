@@ -16,4 +16,4 @@ del *.nupkg
 & $msbuild "../SQLite.Net.sln" /restore /p:Configuration=Release /p:Platform="Any CPU" /p:Version="$version" /p:VersionSuffix="$versionSuffix" /p:Deterministic=false /p:PackageOutputPath="$PSScriptRoot" --% /t:Clean;Build;Pack
 if ($lastexitcode -ne 0) { exit $lastexitcode; }
 
-nuget push "sqlite-net2.$version.nupkg" -Source $nugetServer
+nuget push "sqlite-net2.$version$versionSuffix.nupkg" -Source $nugetServer
