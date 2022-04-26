@@ -1,29 +1,22 @@
 //
-// Copyright (c) 2012 Krueger Systems, Inc.
-// Copyright (c) 2013 Øystein Krog (oystein.krog@gmail.com)
-// Copyright (c) 2014 Benjamin Mayrargue (softlion@softlion.com)
+// Copyright (c) 2014-2022 Benjamin Mayrargue (benjamin@vapolia.fr)
 //   - Support for multi-columns primary keys (create table / get / find / delete)
 //   - ExecuteSimpleQuery
-//   - Fix disposing bug
+//   - Fix disposing issues
+//   - Remove locks
+//   - Fix transaction issues
+// Copyright (c) 2013 Øystein Krog (oystein.krog@gmail.com)
+// Copyright (c) 2012 Krueger Systems, Inc.
 //
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
+// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 // 
-// The above copyright notice and this permission notice shall be included in
-// all copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 // 
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-// THE SOFTWARE.
-//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using System;
 using System.Collections;
@@ -40,7 +33,7 @@ using System.Threading.Tasks;
 namespace SQLite.Net2
 {
     /// <summary>
-    ///     Represents an open connection to a SQLite database.
+    /// Represents an open connection to a SQLite database.
     /// </summary>
     public class SQLiteConnection : IDisposable
     {
@@ -64,6 +57,7 @@ namespace SQLite.Net2
         private bool _open;
         private Stopwatch? _sw;
         private readonly SQLiteOpenFlags databaseOpenFlags;
+        private readonly string encryptionKey;
 
         public IBlobSerializer? Serializer { get; }
         public string DatabasePath { get;}
@@ -85,81 +79,39 @@ namespace SQLite.Net2
         }
 
         /// <summary>
-        ///     Constructs a new SQLiteConnection and opens a SQLite database specified by databasePath.
-        /// </summary>
-        /// <param name="sqlitePlatform"></param>
-        /// <param name="databasePath">
-        ///     Specifies the path to the database file.
-        /// </param>
-        /// <param name="storeDateTimeAsTicks">
-        ///     Specifies whether to store DateTime properties as ticks (true) or strings (false). You
-        ///     absolutely do want to store them as Ticks in all new projects. The option to set false is
-        ///     only here for backwards compatibility. There is a *significant* speed advantage, with no
-        ///     down sides, when setting storeDateTimeAsTicks = true.
-        /// </param>
-        /// <param name="serializer">
-        ///     Blob serializer to use for storing undefined and complex data structures. If left null
-        ///     these types will thrown an exception as usual.
-        /// </param>
-        /// <param name="tableMappings">
-        ///     Exisiting table mapping that the connection can use. If its null, it creates the mappings,
-        ///     if and when required. The mappings are also created when an unknown type is used for the first
-        ///     time.
-        /// </param>
-        /// <param name="extraTypeMappings">
-        ///     Any extra type mappings that you wish to use for overriding the default for creating
-        ///     column definitions for SQLite DDL in the class Orm (snake in Swedish).
-        /// </param>
-        /// <param name="resolver">
-        ///     A contract resovler for resolving interfaces to concreate types during object creation
-        /// </param>
-
-        public SQLiteConnection(string databasePath, bool storeDateTimeAsTicks = true,  IBlobSerializer? serializer = null,  IDictionary<string, TableMapping>? tableMappings = null, IDictionary<Type, string>? extraTypeMappings = null,  IContractResolver? resolver = null)
-            : this(databasePath, SQLiteOpenFlags.ReadWrite | SQLiteOpenFlags.Create, storeDateTimeAsTicks, serializer, tableMappings, extraTypeMappings, resolver)
-        {
-        }
-
-        /// <summary>
         /// Create a new connection to the same database.
         /// </summary>
         /// <remarks>
         /// This support scenarios where a code needs to create a transaction, while leaving the current connection transactionless (ie: sharable with other codes), as a transaction creates a state in this object.
+        ///
+        /// This is used by *All() methods.
+        ///
+        /// Override it if you have not called the constructor with an encryption key and you database is encrypted.
         /// </remarks>
-        public SQLiteConnection Clone() 
-            => new (DatabasePath, databaseOpenFlags, StoreDateTimeAsTicks, Serializer, _tableMappings, ExtraTypeMappings, Resolver);
+        public virtual SQLiteConnection Clone() 
+            => new (DatabasePath, databaseOpenFlags, StoreDateTimeAsTicks, Serializer, _tableMappings, ExtraTypeMappings, Resolver, encryptionKey);
 
         /// <summary>
-        ///     Constructs a new SQLiteConnection and opens a SQLite database specified by databasePath.
+        /// Constructs a new SQLiteConnection and opens a SQLite database specified by databasePath.
         /// </summary>
-        /// <param name="sqlitePlatform"></param>
-        /// <param name="databasePath">
-        ///     Specifies the path to the database file.
-        /// </param>
+        /// <param name="databasePath">Specifies the path to the database file. </param>
         /// <param name="openFlags"></param>
         /// <param name="storeDateTimeAsTicks">
-        ///     Specifies whether to store DateTime properties as ticks (true) or strings (false). You
-        ///     absolutely do want to store them as Ticks in all new projects. The option to set false is
-        ///     only here for backwards compatibility. There is a *significant* speed advantage, with no
-        ///     down sides, when setting storeDateTimeAsTicks = true.
+        /// Specifies whether to store DateTime properties as ticks (true) or strings (false). You
+        /// absolutely do want to store them as Ticks in all new projects. The option to set false is
+        /// only here for backwards compatibility. There is a *significant* speed advantage, with no
+        /// down sides, when setting storeDateTimeAsTicks = true.
         /// </param>
-        /// <param name="serializer">
-        ///     Blob serializer to use for storing undefined and complex data structures. If left null
-        ///     these types will thrown an exception as usual.
-        /// </param>
+        /// <param name="serializer">Blob serializer to use for storing undefined and complex data structures. If left null these types will thrown an exception as usual.</param>
         /// <param name="tableMappings">
-        ///     Exisiting table mapping that the connection can use. If its null, it creates the mappings,
-        ///     if and when required. The mappings are also created when an unknown type is used for the first
-        ///     time.
+        /// Existing table mapping that the connection can use. If its null, it creates the mappings,
+        /// if and when required. The mappings are also created when an unknown type is used for the first time.
         /// </param>
-        /// <param name="extraTypeMappings">
-        ///     Any extra type mappings that you wish to use for overriding the default for creating
-        ///     column definitions for SQLite DDL in the class Orm (snake in Swedish).
-        /// </param>
-        /// <param name="resolver">
-        ///     A contract resovler for resolving interfaces to concreate types during object creation
-        /// </param>
-        public SQLiteConnection(string databasePath, SQLiteOpenFlags openFlags, bool storeDateTimeAsTicks = true,  IBlobSerializer? serializer = null,  IDictionary<string, TableMapping>? tableMappings = null,
-             IDictionary<Type, string>? extraTypeMappings = null, IContractResolver? resolver = null)
+        /// <param name="extraTypeMappings">Any extra type mappings that you wish to use for overriding the default for creating column definitions for SQLite DDL in the class Orm (snake in Swedish).</param>
+        /// <param name="resolver">A contract resovler for resolving interfaces to concreate types during object creation</param>
+        /// <param name="encryptionKey">When using SQL CIPHER, automatically sets the key (you won't need to override Clone() in this case)</param>
+        public SQLiteConnection(string databasePath, SQLiteOpenFlags openFlags = SQLiteOpenFlags.ReadWrite | SQLiteOpenFlags.Create, bool storeDateTimeAsTicks = true,  IBlobSerializer? serializer = null,  IDictionary<string, TableMapping>? tableMappings = null,
+             IDictionary<Type, string>? extraTypeMappings = null, IContractResolver? resolver = null, string? encryptionKey = null)
         {
             if (string.IsNullOrEmpty(databasePath))
                 throw new ArgumentException("Must be specified", nameof(databasePath));
@@ -172,6 +124,18 @@ namespace SQLite.Net2
             Handle = handle ?? throw new NullReferenceException("Database handle is null");
             _open = true;
             databaseOpenFlags = openFlags;
+            
+            if (!string.IsNullOrWhiteSpace(encryptionKey))
+            {
+                this.encryptionKey = encryptionKey!;
+                var cipherVer = ExecuteScalar<string>("PRAGMA cipher_version");
+                if (string.IsNullOrWhiteSpace(cipherVer))
+                    throw new Exception("This build is not using SQL CIPHER. See https://github.com/softlion/SQLite.Net-PCL2 for doc on how to setup SQL CIPHER.");
+
+                var o = ExecuteScalar<string>($"PRAGMA key = '{encryptionKey}';");
+                if(o != "ok")
+                    throw new Exception("Invalid cipher key");
+            }
 
             BusyTimeout = TimeSpan.FromSeconds(0.1);
             Serializer = serializer;

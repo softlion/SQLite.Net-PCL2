@@ -171,8 +171,19 @@ The T in `db.Query<T>` specifies the object to create for each row. It can be a 
 
 ## Using an encrypted database file
 
-Add the nuget [SQLitePCLRaw.bundle_e_sqlcipher](https://www.nuget.org/packages/SQLitePCLRaw.bundle_e_sqlcipher) to your common project.  
-Then add this code right after opening or creating the db, and before any other db call:
+Add the nuget [SQLitePCLRaw.bundle_e_sqlcipher](https://www.nuget.org/packages/SQLitePCLRaw.bundle_e_sqlcipher) to your common project.
+
+### Option 1 (preferred)
+
+Use the `encryptionKey` parameter in the constructor of `SQLiteConnection`.
+
+Then use the db as usual.
+
+With this option, the encryption key is kept in memory. That should not be an issue.
+
+
+### Option 2 (roots)
+Add this code right after opening or creating the db, and before any other db call:
 
 ```c#
 string key = "yourCryptingKey";
@@ -182,7 +193,11 @@ if(ok != "ok")
    throw new Exception("Bad key");
 ```
 
+If you will use `InsertAll(), InsertOrUpdateAll(), ReplaceAll()` you must create a new class deriving from `SQLiteConnection` and override `Clone()` so it sets the encryption key after cloning.
+
 Then use the db as usual.
+
+### Final Thoughts
 
 You can read the version of the cypher lib using the code. Check the [Zenetik](//https://www.zetetic.net/sqlcipher/sqlcipher-api/#cipher_version) website for more information.
 

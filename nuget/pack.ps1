@@ -7,7 +7,7 @@ if ($IsMacOS) {
     $msbuild = join-path $msbuild 'MSBuild\Current\Bin\MSBuild.exe'
 }
 $version="2.1.0"
-$versionSuffix="-pre2"
+$versionSuffix="-pre3"
 
 #####################
 #Build release config

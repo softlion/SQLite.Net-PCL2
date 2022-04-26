@@ -16,7 +16,7 @@ namespace SQLite.Net2.Tests
         public class BlobDatabase : SQLiteConnection
         {
             public BlobDatabase(IBlobSerializer serializer) :
-                base(TestPath.CreateTemporaryDatabase(), false, serializer)
+                base(TestPath.CreateTemporaryDatabase(), storeDateTimeAsTicks: false,  serializer: serializer)
             {
                 DropTable<ComplexOrder>();
             }

@@ -106,13 +106,10 @@ namespace SQLite.Net2.Tests
     public class TestDb : SQLiteConnection
     {
         public TestDb(bool storeDateTimeAsTicks = true, IContractResolver resolver = null)
-            : base(
-                TestPath.CreateTemporaryDatabase(), storeDateTimeAsTicks, null,
-                extraTypeMappings: null,
-                resolver: resolver)
-		{
+            : base(TestPath.CreateTemporaryDatabase(), storeDateTimeAsTicks: storeDateTimeAsTicks, resolver: resolver)
+        {
             TraceListener = DebugTraceListener.Instance;
-		}
+        }
     }
 
     public class TestPath
