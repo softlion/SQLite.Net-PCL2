@@ -194,12 +194,13 @@ if (String.IsNullOrWhiteSpace(cipherVer))
  
 ## Using transactions
 
-Warning: all transactions methods create a state in this connection (the transaction depth).    
-Be sure to not share the connection with other simultaneous threads.
+Warning: all transactions methods create a state in this connection (the transaction depth).      
+Be sure to not share the connection with other simultaneous threads.  
+You can use `using var tempConnection = connection.Clone()` to prevent this issue.
 
-Especially these methods create by default an implicit transaction:  
-`InsertAll(), InsertOrUpdateAll(), ReplaceAll()`  
-They all have a boolean parameter to disable the implicit transaction (beware of performances).
+The following methods use `Clone` to clone the connection and prevent any interaction of the transaction they create with your code:  
+`InsertAll(), InsertOrUpdateAll(), ReplaceAll()`    
+They all have a boolean parameter to disable this behavior (beware of performances), which will also prevent a correct rollback in case an exception occurs.
 
 Standard transaction:
 ```c#

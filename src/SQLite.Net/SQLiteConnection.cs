@@ -45,7 +45,7 @@ namespace SQLite.Net2
     public class SQLiteConnection : IDisposable
     {
         private static readonly IDbHandle? NullHandle = null;
-        readonly SqliteApi sqlite = SqliteApi.Instance;
+        private readonly SqliteApi sqlite = SqliteApi.Instance;
 
         /// <summary>
         ///     Used to list some code that we want the MonoTouch linker
@@ -56,17 +56,23 @@ namespace SQLite.Net2
 #pragma warning restore 649
         private readonly Random _rand = new ();
         private readonly ConcurrentDictionary<string, TableMapping> _tableMappings;
+        private readonly ConcurrentDictionary<(string MappedTypeFullName, string Extra), PreparedSqlLiteInsertCommand> _insertCommandMap = new ();
+        
+        private IColumnInformationProvider? _columnInformationProvider;
         private TimeSpan _busyTimeout;
         private long _elapsedMilliseconds;
         private bool _open;
         private Stopwatch? _sw;
+        private readonly SQLiteOpenFlags databaseOpenFlags;
 
-        public IBlobSerializer Serializer { get; }
+        public IBlobSerializer? Serializer { get; }
         public string DatabasePath { get;}
         public bool StoreDateTimeAsTicks { get; }
         public IDictionary<Type, string> ExtraTypeMappings { get; }
         public IContractResolver Resolver { get;  }
-
+        public IDbHandle Handle { get; private set; }
+        public bool TimeExecution { get; set; }
+        public ITraceListener? TraceListener { get; set; }
         
         static SQLiteConnection()
         {
@@ -108,10 +114,19 @@ namespace SQLite.Net2
         ///     A contract resovler for resolving interfaces to concreate types during object creation
         /// </param>
 
-        public SQLiteConnection(string databasePath, bool storeDateTimeAsTicks = true,  IBlobSerializer serializer = null,  IDictionary<string, TableMapping> tableMappings = null, IDictionary<Type, string> extraTypeMappings = null,  IContractResolver resolver = null)
+        public SQLiteConnection(string databasePath, bool storeDateTimeAsTicks = true,  IBlobSerializer? serializer = null,  IDictionary<string, TableMapping>? tableMappings = null, IDictionary<Type, string>? extraTypeMappings = null,  IContractResolver? resolver = null)
             : this(databasePath, SQLiteOpenFlags.ReadWrite | SQLiteOpenFlags.Create, storeDateTimeAsTicks, serializer, tableMappings, extraTypeMappings, resolver)
         {
         }
+
+        /// <summary>
+        /// Create a new connection to the same database.
+        /// </summary>
+        /// <remarks>
+        /// This support scenarios where a code needs to create a transaction, while leaving the current connection transactionless (ie: sharable with other codes), as a transaction creates a state in this object.
+        /// </remarks>
+        public SQLiteConnection Clone() 
+            => new (DatabasePath, databaseOpenFlags, StoreDateTimeAsTicks, Serializer, _tableMappings, ExtraTypeMappings, Resolver);
 
         /// <summary>
         ///     Constructs a new SQLiteConnection and opens a SQLite database specified by databasePath.
@@ -143,60 +158,40 @@ namespace SQLite.Net2
         /// <param name="resolver">
         ///     A contract resovler for resolving interfaces to concreate types during object creation
         /// </param>
-
         public SQLiteConnection(string databasePath, SQLiteOpenFlags openFlags, bool storeDateTimeAsTicks = true,  IBlobSerializer? serializer = null,  IDictionary<string, TableMapping>? tableMappings = null,
              IDictionary<Type, string>? extraTypeMappings = null, IContractResolver? resolver = null)
         {
-            ExtraTypeMappings = extraTypeMappings ?? new Dictionary<Type, string>();
-            Serializer = serializer;
-            Resolver = resolver ?? ContractResolver.Current;
-
-            _tableMappings = new (tableMappings ?? new Dictionary<string, TableMapping>());
-
             if (string.IsNullOrEmpty(databasePath))
-            {
-                throw new ArgumentException("Must be specified", "databasePath");
-            }
-
+                throw new ArgumentException("Must be specified", nameof(databasePath));
             DatabasePath = databasePath;
 
-            IDbHandle handle;
-            var r = sqlite.Open(DatabasePath, out handle, (int) openFlags, null);
-
-            Handle = handle;
+            var r = sqlite.Open(DatabasePath, out var handle, (int) openFlags, null);
             if (r != Result.OK)
-            {
-                throw new SQLiteException(r, string.Format("Could not open database file: {0} ({1})", DatabasePath, r));
-            }
+                throw new SQLiteException(r, $"Could not open database file: {DatabasePath} ({r})");
 
-            if (handle == null)
-            {
-                throw new NullReferenceException("Database handle is null");
-            }
-
-            Handle = handle;
-
+            Handle = handle ?? throw new NullReferenceException("Database handle is null");
             _open = true;
-
-            StoreDateTimeAsTicks = storeDateTimeAsTicks;
+            databaseOpenFlags = openFlags;
 
             BusyTimeout = TimeSpan.FromSeconds(0.1);
+            Serializer = serializer;
+            StoreDateTimeAsTicks = storeDateTimeAsTicks;
+            ExtraTypeMappings = extraTypeMappings ?? new Dictionary<Type, string>();
+            Resolver = resolver ?? ContractResolver.Current;
+            _tableMappings = new (tableMappings ?? new Dictionary<string, TableMapping>());
         }
 
-		private IColumnInformationProvider _columnInformationProvider;
 		public IColumnInformationProvider ColumnInformationProvider 
 		{
-			get { return _columnInformationProvider; }
-			set
+			get => _columnInformationProvider;
+            set
 			{
 				_columnInformationProvider = value;
 				Orm.ColumnInformationProvider = _columnInformationProvider ?? new DefaultColumnInformationProvider ();
 			}
 		}
 
-        public IDbHandle Handle { get; private set; }
-        public bool TimeExecution { get; set; }
-        public ITraceListener TraceListener { get; set; }
+
 
         /// <summary>
         /// Sets a busy handler to sleep the specified amount of time when a table is locked.
@@ -440,7 +435,8 @@ namespace SQLite.Net2
         /// <param name="columnNames">An array of column names to index</param>
         /// <param name="unique">Whether the index should be unique</param>
         
-        public int CreateIndex(string tableName, string[] columnNames, bool unique = false) => CreateIndex(tableName + "_" + string.Join("_", columnNames), tableName, columnNames, unique);
+        public int CreateIndex(string tableName, string[] columnNames, bool unique = false) 
+            => CreateIndex(tableName + "_" + string.Join("_", columnNames), tableName, columnNames, unique);
 
         /// <summary>
         ///     Creates an index for the specified object property.
@@ -953,7 +949,7 @@ namespace SQLite.Net2
 
             try
             {
-                Execute("savepoint " + retVal);
+                Execute($"savepoint {retVal}");
             }
             catch (Exception)
             {
@@ -1079,15 +1075,17 @@ namespace SQLite.Net2
         /// </remarks>
         public void RunInTransaction(Action action)
         {
-            var savePoint = SaveTransactionPoint();
+            string? savePoint = null;
             try
             {
+                savePoint = SaveTransactionPoint();
                 action();
                 Release(savePoint);
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                RollbackTo(savePoint, true);
+                if(savePoint != null)
+                    RollbackTo(savePoint, true);
                 throw;
             }
         }
@@ -1110,10 +1108,11 @@ namespace SQLite.Net2
             var c = 0;
             if (runInTransaction)
             {
-                RunInTransaction(() =>
+                using var db = Clone();
+                db.RunInTransaction(() =>
                 {
                     foreach (var r in objects)
-                        c += Insert(r);
+                        c += db.Insert(r);
                 });
             }
             else
@@ -1145,10 +1144,11 @@ namespace SQLite.Net2
             var c = 0;
             if (runInTransaction)
             {
-                RunInTransaction(() =>
+                using var db = Clone();
+                db.RunInTransaction(() =>
                 {
                     foreach (var r in objects)
-                        c += Insert(r, extra);
+                        c += db.Insert(r, extra);
                 });
             }
             else
@@ -1180,10 +1180,11 @@ namespace SQLite.Net2
             var c = 0;
             if (runInTransaction)
             {
-                RunInTransaction(() =>
+                using var db = Clone();
+                db.RunInTransaction(() =>
                 {
                     foreach (var r in objects)
-                        c += Insert(r, objType);
+                        c += db.Insert(r, objType);
                 });
             }
             else
@@ -1251,10 +1252,11 @@ namespace SQLite.Net2
         public int InsertOrReplaceAll(IEnumerable objects)
         {
             var c = 0;
-            RunInTransaction(() =>
+            using var db = Clone();
+            db.RunInTransaction(() =>
             {
                 foreach (var r in objects) 
-                    c += InsertOrReplace(r);
+                    c += db.InsertOrReplace(r);
             });
             return c;
         }
@@ -1316,10 +1318,11 @@ namespace SQLite.Net2
         public int InsertOrReplaceAll(IEnumerable objects, Type objType)
         {
             var c = 0;
-            RunInTransaction(() =>
+            using var db = Clone();
+            db.RunInTransaction(() =>
             {
                 foreach (var r in objects) 
-                    c += InsertOrReplace(r, objType);
+                    c += db.InsertOrReplace(r, objType);
             });
             return c;
         }
@@ -1382,20 +1385,20 @@ namespace SQLite.Net2
             var insertCmd = GetInsertCommand(map, extra);
             int count;
 
-            lock (insertCmd)
+            try
             {
                 // We lock here to protect the prepared statement returned via GetInsertCommand.
                 // A SQLite prepared statement can be bound for only one operation at a time.
-                try
+                lock (insertCmd)
                 {
                     count = insertCmd.ExecuteNonQuery(vals);
                 }
-                catch (SQLiteException ex)
-                {
-                    if (sqlite.ExtendedErrCode(Handle) == ExtendedResult.ConstraintNotNull)
-                        throw new NotNullConstraintViolationException(ex.Result, ex.Message, map, obj);
-                    throw;
-                }
+            }
+            catch (SQLiteException ex)
+            {
+                if (sqlite.ExtendedErrCode(Handle) == ExtendedResult.ConstraintNotNull)
+                    throw new NotNullConstraintViolationException(ex.Result, ex.Message, map, obj);
+                throw;
             }
 
             if (map.HasAutoIncPK)
@@ -1409,8 +1412,6 @@ namespace SQLite.Net2
 
             return count;
         }
-
-        readonly ConcurrentDictionary<(string MappedTypeFullName, string Extra), PreparedSqlLiteInsertCommand> _insertCommandMap = new ();
 
         private PreparedSqlLiteInsertCommand GetInsertCommand(TableMapping map, string extra)
         {
@@ -1567,10 +1568,11 @@ namespace SQLite.Net2
             var c = 0;
             if (runInTransaction)
             {
-                RunInTransaction(() =>
+                using var db = Clone();
+                db.RunInTransaction(() =>
                 {
                     foreach (var r in objects)
-                        c += Update(r);
+                        c += db.Update(r);
                 });
             }
             else

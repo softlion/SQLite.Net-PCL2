@@ -115,29 +115,34 @@ namespace SQLite.Net2.Tests
         [Test]
         public void InsertAllFailureInsideTransaction()
         {
-            List<UniqueObj> testObjects = Enumerable.Range(1, 20).Select(i => new UniqueObj
-            {
-                Id = i
-            }).ToList();
-            testObjects[testObjects.Count - 1].Id = 1; // causes the insert to fail because of duplicate key
+            var testObjects = Enumerable.Range(1, 20).Select(i => new UniqueObj { Id = i }).ToList();
+            testObjects[^1].Id = 1; // causes the insert to fail because of duplicate key
 
-            ExceptionAssert.Throws<SQLiteException>(() => _db.RunInTransaction(() => { _db.InsertAll(testObjects); }));
-
+            ExceptionAssert.Throws<SQLiteException>(() => _db.RunInTransaction(() => { _db.InsertAll(testObjects, false); }));
             Assert.AreEqual(0, _db.Table<UniqueObj>().Count());
         }
 
         [Test]
         public void InsertAllFailureOutsideTransaction()
         {
-            List<UniqueObj> testObjects = Enumerable.Range(1, 20).Select(i => new UniqueObj
-            {
-                Id = i
-            }).ToList();
-            testObjects[testObjects.Count - 1].Id = 1; // causes the insert to fail because of duplicate key
+            var testObjects = Enumerable.Range(1, 20).Select(i => new UniqueObj { Id = i }).ToList();
+            testObjects[^1].Id = 1; // causes the insert to fail because of duplicate key
 
-            ExceptionAssert.Throws<SQLiteException>(() => _db.InsertAll(testObjects));
+            ExceptionAssert.Throws<SQLiteException>(() => _db.InsertAll(testObjects, true));
 
             Assert.AreEqual(0, _db.Table<UniqueObj>().Count());
+        }
+
+        [Test]
+        public void InsertAllFailureSucceedsOutsideTransaction()
+        {
+            _db.DeleteAll<UniqueObj>();
+            var testObjects = Enumerable.Range(1, 20).Select(i => new UniqueObj { Id = i }).ToList();
+            testObjects[^1].Id = 1; // causes the last insert to fail because of duplicate key, but will let all previous insert in the db
+
+            ExceptionAssert.Throws<SQLiteException>(() => _db.InsertAll(testObjects, false));
+
+            Assert.AreEqual(19, _db.Table<UniqueObj>().Count());
         }
 
         [Test]
