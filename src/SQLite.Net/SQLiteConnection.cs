@@ -91,6 +91,8 @@ namespace SQLite.Net2
         public virtual SQLiteConnection Clone() 
             => new (DatabasePath, databaseOpenFlags, StoreDateTimeAsTicks, Serializer, _tableMappings, ExtraTypeMappings, Resolver, encryptionKey);
 
+        private static ConfigOption firstConfigOption;
+        
         /// <summary>
         /// Constructs a new SQLiteConnection and opens a SQLite database specified by databasePath.
         /// </summary>
@@ -110,13 +112,25 @@ namespace SQLite.Net2
         /// <param name="extraTypeMappings">Any extra type mappings that you wish to use for overriding the default for creating column definitions for SQLite DDL in the class Orm (snake in Swedish).</param>
         /// <param name="resolver">A contract resovler for resolving interfaces to concreate types during object creation</param>
         /// <param name="encryptionKey">When using SQL CIPHER, automatically sets the key (you won't need to override Clone() in this case)</param>
+        /// <param name="configOption">Mode in which to open the db</param>
         public SQLiteConnection(string databasePath, SQLiteOpenFlags openFlags = SQLiteOpenFlags.ReadWrite | SQLiteOpenFlags.Create, bool storeDateTimeAsTicks = true,  IBlobSerializer? serializer = null,  IDictionary<string, TableMapping>? tableMappings = null,
-             IDictionary<Type, string>? extraTypeMappings = null, IContractResolver? resolver = null, string? encryptionKey = null)
+             IDictionary<Type, string>? extraTypeMappings = null, IContractResolver? resolver = null, string? encryptionKey = null, ConfigOption configOption = ConfigOption.MultiThread)
         {
             if (string.IsNullOrEmpty(databasePath))
                 throw new ArgumentException("Must be specified", nameof(databasePath));
             DatabasePath = databasePath;
 
+            if (firstConfigOption == ConfigOption.Unknown)
+            {
+                firstConfigOption = configOption;
+
+                if (configOption > ConfigOption.SingleThread && sqlite.Threadsafe() == 0)
+                    throw new ArgumentException("SQlite is not compiled with multithread and config option is set to multithread", nameof(configOption));
+                
+                sqlite.Config(configOption);
+                sqlite.Initialize();
+            }
+            
             var r = sqlite.Open(DatabasePath, out var handle, (int) openFlags, null);
             if (r != Result.OK)
                 throw new SQLiteException(r, $"Could not open database file: {DatabasePath} ({r})");

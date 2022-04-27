@@ -25,6 +25,7 @@ namespace SQLite.Net2
 {
     public enum ConfigOption
     {
+        Unknown = 0,
         SingleThread = 1,
         MultiThread = 2,
         Serialized = 3

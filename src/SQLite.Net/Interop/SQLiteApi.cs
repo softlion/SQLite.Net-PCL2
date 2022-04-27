@@ -50,20 +50,17 @@ namespace SQLite.Net2
 
         public Result Initialize()
         {
-            throw new NotImplementedException("");
-            //return (Result)raw.sqlite3_initialize();
+            return (Result)raw.sqlite3_initialize();
         }
 
         public Result Shutdown()
         {
-            throw new NotImplementedException("");
-            //return (Result)raw.sqlite3_shutdown();
+            return (Result)raw.sqlite3_shutdown();
         }
 
         public Result Config(ConfigOption option)
         {
-            throw new NotImplementedException("");
-            //return (Result)raw.sqlite3_config(option);
+            return (Result)raw.sqlite3_config((int)option);
         }
 
         public Result BusyTimeout(IDbHandle db, int milliseconds)
@@ -277,11 +274,11 @@ namespace SQLite.Net2
             return raw.sqlite3_backup_pagecount(internalBackup.DbBackupPtr);
         }
 
-        public int Sleep(int millis)
-        {
-            throw new NotImplementedException("Sleep is not implemented");
-            //return raw.sqlite3_sleep(millis);
-        }
+        // public int Sleep(int millis)
+        // {
+        //     throw new NotImplementedException("Sleep is not implemented");
+        //     //return raw.sqlite3_sleep(millis);
+        // }
 
         private struct DbBackupHandle : IDbBackupHandle
         {
@@ -292,10 +289,8 @@ namespace SQLite.Net2
                 DbBackupPtr = dbBackupPtr;
             }
 
-            public bool Equals(IDbBackupHandle other)
-            {
-                return other is DbBackupHandle && DbBackupPtr == ((DbBackupHandle)other).DbBackupPtr;
-            }
+            public bool Equals(IDbBackupHandle other) 
+                => other is DbBackupHandle handle && DbBackupPtr == handle.DbBackupPtr;
         }
 
         #endregion
