@@ -123,12 +123,28 @@ namespace SQLite.Net2.Tests
         }
 
         [Test]
-        public void InsertAllFailureOutsideTransaction()
+        public void InsertAllFailureInTransaction2()
         {
             var testObjects = Enumerable.Range(1, 20).Select(i => new UniqueObj { Id = i }).ToList();
             testObjects[^1].Id = 1; // causes the insert to fail because of duplicate key
 
             ExceptionAssert.Throws<SQLiteException>(() => _db.InsertAll(testObjects, true));
+
+            Assert.AreEqual(0, _db.Table<UniqueObj>().Count());
+        }
+
+        [Test]
+        public void InsertAllFailureInTransaction3()
+        {
+            var testObjects = Enumerable.Range(1, 20).Select(i => new UniqueObj { Id = i }).ToList();
+            testObjects[^1].Id = 1; // causes the insert to fail because of duplicate key
+
+            ExceptionAssert.Throws<SQLiteException>(() =>
+            {
+                _db.BeginTransaction();
+                _db.InsertAll(testObjects);
+                _db.Commit();
+            });
 
             Assert.AreEqual(0, _db.Table<UniqueObj>().Count());
         }
