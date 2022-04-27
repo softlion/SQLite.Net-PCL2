@@ -7,7 +7,7 @@ if ($IsMacOS) {
     $msbuild = join-path $msbuild 'MSBuild\Current\Bin\MSBuild.exe'
 }
 $version="2.1.0"
-$versionSuffix="-pre4"
+$versionSuffix="-pre6"
 
 #####################
 #Build release config
@@ -17,3 +17,4 @@ del *.nupkg
 if ($lastexitcode -ne 0) { exit $lastexitcode; }
 
 nuget push "sqlite-net2.$version$versionSuffix.nupkg" -Source $nugetServer
+#copy "sqlite-net2.$version$versionSuffix.nupkg" "D:\repos\localnugets"

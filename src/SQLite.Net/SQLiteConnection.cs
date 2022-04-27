@@ -110,9 +110,9 @@ namespace SQLite.Net2
         /// <param name="extraTypeMappings">Any extra type mappings that you wish to use for overriding the default for creating column definitions for SQLite DDL in the class Orm (snake in Swedish).</param>
         /// <param name="resolver">A contract resovler for resolving interfaces to concreate types during object creation</param>
         /// <param name="encryptionKey">When using SQL CIPHER, automatically sets the key (you won't need to override Clone() in this case)</param>
-        /// <param name="configOption">Mode in which to open the db</param>
+        /// <param name="configOption">Mode in which to open the db. Default to Serialized</param>
         public SQLiteConnection(string databasePath, SQLiteOpenFlags openFlags = SQLiteOpenFlags.ReadWrite | SQLiteOpenFlags.Create, bool storeDateTimeAsTicks = true,  IBlobSerializer? serializer = null,  IDictionary<string, TableMapping>? tableMappings = null,
-             IDictionary<Type, string>? extraTypeMappings = null, IContractResolver? resolver = null, string? encryptionKey = null, ConfigOption configOption = ConfigOption.MultiThread)
+             IDictionary<Type, string>? extraTypeMappings = null, IContractResolver? resolver = null, string? encryptionKey = null, ConfigOption configOption = ConfigOption.Serialized)
         {
             if (string.IsNullOrEmpty(databasePath))
                 throw new ArgumentException("Must be specified", nameof(databasePath));
@@ -917,6 +917,7 @@ namespace SQLite.Net2
         /// <returns>A string naming the savepoint.</returns>
         /// <remarks>
         /// All transactions methods creates a state in this connection. Be sure to not share it with other calls.
+        /// Not thread safe.
         /// </remarks>
         public string SaveTransactionPoint()
         {
@@ -981,7 +982,12 @@ namespace SQLite.Net2
                     }
                 }
                 else
-                    DoSavePointExecute(savepoint!, "rollback to ");
+                {
+                    if (IsInTransaction)
+                        DoSavePointExecute(savepoint!, "rollback to ");
+                    else
+                        transactionDepth = 0;
+                }
             }
             catch (SQLiteException)
             {
@@ -1014,6 +1020,12 @@ namespace SQLite.Net2
 
             if (!int.TryParse(savePoint.Substring(firstLen + 1), out var depth) || depth < 0) 
                 throw new ArgumentException($"savePoint '{savePoint}' is not valid, and should be the result of a call to SaveTransactionPoint.", nameof(savePoint));
+
+            if (depth == 1)
+            {
+                RollbackTo(null, true);
+                return;
+            }
             
             if (depth > transactionDepth)
                 throw new ArgumentException($"savePoint '{savePoint}' is not valid: depth ({depth}) >= transactionDepth ({transactionDepth})", nameof(savePoint));
@@ -1358,13 +1370,13 @@ namespace SQLite.Net2
             for (var i = 0; i < vals.Length; i++)
                 vals[i] = cols[i].GetValue(obj);
 
-            var insertCmd = GetInsertCommand(map, extra);
             int count;
 
             try
             {
                 // We lock here to protect the prepared statement returned via GetInsertCommand.
                 // A SQLite prepared statement can be bound for only one operation at a time.
+                var insertCmd = GetInsertCommand(map, extra);
                 lock (insertCmd)
                 {
                     count = insertCmd.ExecuteNonQuery(vals);
