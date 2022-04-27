@@ -37,9 +37,9 @@ namespace SQLite.Net2
     /// </summary>
     public class SQLiteConnection : IDisposable
     {
-        private static readonly IDbHandle? NullHandle = null;
-        private readonly SqliteApi sqlite = SqliteApi.Instance;
+        private static ConfigOption firstConfigOption;
 
+        private readonly SqliteApi sqlite = SqliteApi.Instance;
         /// <summary>
         ///     Used to list some code that we want the MonoTouch linker
         ///     to see, but that we never want to actually execute.
@@ -64,7 +64,7 @@ namespace SQLite.Net2
         public bool StoreDateTimeAsTicks { get; }
         public IDictionary<Type, string> ExtraTypeMappings { get; }
         public IContractResolver Resolver { get;  }
-        public IDbHandle Handle { get; private set; }
+        public IDbHandle? Handle { get; private set; }
         public bool TimeExecution { get; set; }
         public ITraceListener? TraceListener { get; set; }
         
@@ -90,8 +90,6 @@ namespace SQLite.Net2
         /// </remarks>
         public virtual SQLiteConnection Clone() 
             => new (DatabasePath, databaseOpenFlags, StoreDateTimeAsTicks, Serializer, _tableMappings, ExtraTypeMappings, Resolver, encryptionKey);
-
-        private static ConfigOption firstConfigOption;
         
         /// <summary>
         /// Constructs a new SQLiteConnection and opens a SQLite database specified by databasePath.
@@ -181,7 +179,7 @@ namespace SQLite.Net2
             set
             {
                 _busyTimeout = value;
-                if (Handle != NullHandle)
+                if (Handle != null)
                     sqlite.BusyTimeout(Handle, (int) _busyTimeout.TotalMilliseconds);
             }
         }
@@ -1788,7 +1786,7 @@ namespace SQLite.Net2
 
         public void Close()
         {
-            if (_open && Handle != NullHandle)
+            if (_open && Handle != null)
             {
                 try
                 {
@@ -1805,7 +1803,7 @@ namespace SQLite.Net2
                 }
                 finally
                 {
-                    Handle = NullHandle;
+                    Handle = null;
                     _open = false;
                 }
             }
