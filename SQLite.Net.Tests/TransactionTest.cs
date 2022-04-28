@@ -35,6 +35,8 @@ namespace SQLite.Net2.Tests
         {
             [AutoIncrement, PrimaryKey]
             public int Id { get; set; }
+            
+            public int Toto { get; set; }
 
             public override string ToString()
             {
@@ -56,27 +58,41 @@ namespace SQLite.Net2.Tests
         }
 
         [Test]
+        public void SuccesfulNestedSavepointTransaction()
+        {
+            db.RunInTransaction(dbb =>
+            {
+                dbb.Delete(testObjects[0]);
+                dbb.RunInTransaction(dbbb => { dbbb.InsertAll(new TestObj[] { new(), new() }); });
+            });
+
+            //catch (SQLiteException e) when(e.Message == "database is locked")
+            Assert.AreEqual(testObjects.Count+1, db.Table<TestObj>().Count());
+        }
+
+        [Test]
         public void FailNestedSavepointTransaction()
         {
+            var hasCatch = false;
             try
             {
-                db.RunInTransaction(() =>
+                db.RunInTransaction(dbb =>
                 {
-                    db.Delete(testObjects[0]);
+                    dbb.Delete(testObjects[0]);
 
-                    db.RunInTransaction(() =>
+                    dbb.RunInTransaction(dbbb =>
                     {
-                        db.Delete(testObjects[1]);
-
+                        dbbb.Delete(testObjects[1]);
                         throw new TransactionTestException();
                     });
                 });
             }
             catch (TransactionTestException)
             {
-                // ignore
+                hasCatch = true;
             }
 
+            Assert.IsTrue(hasCatch);
             Assert.AreEqual(testObjects.Count, db.Table<TestObj>().Count());
         }
 
@@ -85,9 +101,9 @@ namespace SQLite.Net2.Tests
         {
             try
             {
-                db.RunInTransaction(() =>
+                db.RunInTransaction(dbb =>
                 {
-                    db.Delete(testObjects[0]);
+                    dbb.Delete(testObjects[0]);
 
                     throw new TransactionTestException();
                 });
@@ -103,11 +119,11 @@ namespace SQLite.Net2.Tests
         [Test]
         public void SuccessfulNestedSavepointTransaction()
         {
-            db.RunInTransaction(() =>
+            db.RunInTransaction(dbb =>
             {
-                db.Delete(testObjects[0]);
+                dbb.Delete(testObjects[0]);
 
-                db.RunInTransaction(() => { db.Delete(testObjects[1]); });
+                dbb.RunInTransaction(dbbb => { dbbb.Delete(testObjects[1]); });
             });
 
             Assert.AreEqual(testObjects.Count - 2, db.Table<TestObj>().Count());
@@ -116,11 +132,11 @@ namespace SQLite.Net2.Tests
         [Test]
         public void SuccessfulSavepointTransaction()
         {
-            db.RunInTransaction(() =>
+            db.RunInTransaction(dbb =>
             {
-                db.Delete(testObjects[0]);
-                db.Delete(testObjects[1]);
-                db.Insert(new TestObj());
+                dbb.Delete(testObjects[0]);
+                dbb.Delete(testObjects[1]);
+                dbb.Insert(new TestObj());
             });
 
             Assert.AreEqual(testObjects.Count - 1, db.Table<TestObj>().Count());
@@ -132,7 +148,7 @@ namespace SQLite.Net2.Tests
         {
             try
             {
-                db.RunInTransaction(() =>
+                db.RunInTransaction(dbb =>
                 {
                     throw new TransactionTestException();
                 });
@@ -149,9 +165,9 @@ namespace SQLite.Net2.Tests
         [Test]
         public void SuccesfulSavepointTransaction()
         {
-            db.RunInTransaction(() =>
+            db.RunInTransaction(dbb =>
             {
-                db.InsertOrReplaceAll(testObjects);
+                dbb.InsertOrReplaceAll(testObjects);
             });
         }
     }

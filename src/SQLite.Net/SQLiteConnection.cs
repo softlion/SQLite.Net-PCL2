@@ -984,7 +984,7 @@ namespace SQLite.Net2
                 else
                 {
                     if (IsInTransaction)
-                        DoSavePointExecute(savepoint!, "rollback to ");
+                        DoSavePointExecute(savepoint!, "rollback to ", true);
                     else
                         transactionDepth = 0;
                 }
@@ -1009,9 +1009,9 @@ namespace SQLite.Net2
         /// All transactions methods creates a state in this connection. Be sure to not share it with other calls.
         /// </remarks>
         public void Release(string savepoint)
-            => DoSavePointExecute(savepoint, "release ");
+            => DoSavePointExecute(savepoint, "release ", false);
 
-        private void DoSavePointExecute(string savePoint, string cmd)
+        private void DoSavePointExecute(string savePoint, string cmd, bool isRollback)
         {
             // Validate the savepoint
             var firstLen = savePoint?.IndexOf('D') ?? 0;
@@ -1021,19 +1021,22 @@ namespace SQLite.Net2
             if (!int.TryParse(savePoint.Substring(firstLen + 1), out var depth) || depth < 0) 
                 throw new ArgumentException($"savePoint '{savePoint}' is not valid, and should be the result of a call to SaveTransactionPoint.", nameof(savePoint));
 
-            if (depth == 1)
-            {
-                RollbackTo(null, true);
-                return;
-            }
+            // if (depth == 1)
+            // {
+            //     if (isRollback)
+            //     {
+            //         RollbackTo(null, true);
+            //     }
+            //     return;
+            // }
             
             if (depth > transactionDepth)
                 throw new ArgumentException($"savePoint '{savePoint}' is not valid: depth ({depth}) >= transactionDepth ({transactionDepth})", nameof(savePoint));
 
             try
             {
-                transactionDepth = depth-1;
                 Execute(cmd + savePoint);
+                transactionDepth = depth-1;
             }
             catch
             {
@@ -1046,28 +1049,37 @@ namespace SQLite.Net2
 
         /// <summary>
         ///     Executes
-        ///     <paramref name="action" />
+        ///     <paramref name="writeAction" />
         ///     within a (possibly nested) transaction by wrapping it in a SAVEPOINT. If an
         ///     exception occurs the whole transaction is rolled back, not just the current savepoint. The exception
         ///     is rethrown.
         /// </summary>
-        /// <param name="action">
-        ///     The <see cref="Action" /> to perform within a transaction.
-        ///     <paramref name="action" />
-        ///     can contain any number
-        ///     of operations on the connection but should never call <see cref="BeginTransaction" /> or
-        ///     <see cref="Commit" />.
+        /// <param name="writeAction">
+        /// The <see cref="Action" /> to perform within a transaction.
+        /// <paramref name="writeAction" />
+        /// can contain any number of operations on the connection but should never call <see cref="BeginTransaction" /> or <see cref="Commit" />.
         /// </param>
+        /// <param name="cloneConnection">clone the connection if not already in a transaction, to prevent sharing a transaction with other simultaneous calls that do not use a transaction.</param>
         /// <remarks>
+        /// When not in a transaction, create a new connection to execute the write action so it is not shared with other calls.
+        /// 
         /// All transactions methods creates a state in this connection. Be sure to not share it with other calls.
         /// </remarks>
-        public void RunInTransaction(Action action)
+        public void RunInTransaction(Action<SQLiteConnection> writeAction, bool cloneConnection = true)
         {
+            //When not in a transaction, create a new connection to execute the write action 
+            if (cloneConnection && !IsInTransaction)
+            {
+                using var db = Clone();
+                db.RunInTransaction(writeAction, false);
+                return;
+            }
+            
             string? savePoint = null;
             try
             {
                 savePoint = SaveTransactionPoint();
-                action();
+                writeAction(this);
                 Release(savePoint);
             }
             catch (Exception e)
@@ -1096,11 +1108,9 @@ namespace SQLite.Net2
             var c = 0;
             if (runInTransaction)
             {
-                using var db = Clone();
-                db.RunInTransaction(() =>
+                RunInTransaction(db =>
                 {
-                    foreach (var r in objects)
-                        c += db.Insert(r);
+                    c = db.InsertAll(objects, false);
                 });
             }
             else
@@ -1132,8 +1142,7 @@ namespace SQLite.Net2
             var c = 0;
             if (runInTransaction)
             {
-                using var db = Clone();
-                db.RunInTransaction(() =>
+                RunInTransaction(db =>
                 {
                     foreach (var r in objects)
                         c += db.Insert(r, extra);
@@ -1168,8 +1177,7 @@ namespace SQLite.Net2
             var c = 0;
             if (runInTransaction)
             {
-                using var db = Clone();
-                db.RunInTransaction(() =>
+                RunInTransaction(db =>
                 {
                     foreach (var r in objects)
                         c += db.Insert(r, objType);
@@ -1240,8 +1248,7 @@ namespace SQLite.Net2
         public int InsertOrReplaceAll(IEnumerable objects)
         {
             var c = 0;
-            using var db = Clone();
-            db.RunInTransaction(() =>
+            RunInTransaction(db =>
             {
                 foreach (var r in objects) 
                     c += db.InsertOrReplace(r);
@@ -1306,8 +1313,7 @@ namespace SQLite.Net2
         public int InsertOrReplaceAll(IEnumerable objects, Type objType)
         {
             var c = 0;
-            using var db = Clone();
-            db.RunInTransaction(() =>
+            RunInTransaction(db =>
             {
                 foreach (var r in objects) 
                     c += db.InsertOrReplace(r, objType);
@@ -1492,10 +1498,13 @@ namespace SQLite.Net2
                 throw new NotSupportedException("Cannot update " + map.TableName + ": it has no PK");
             }
 
-            var cols = from p in map.Columns
+            var cols = (from p in map.Columns
                        where !(from pkey in map.PKs
                                select pkey).Contains(p)
-                       select p;
+                       select p).ToList();
+
+            if (cols.Count == 0)
+                return 0;
 
             var vals = from c in cols
                        select c.GetValue(obj);
@@ -1515,9 +1524,9 @@ namespace SQLite.Net2
             }
             else
             {
-                q = string.Format("update \"{0}\" set {1} where {2} = ? ", map.TableName,
+                q = string.Format("update \"{0}\" set {1} where {2} ", map.TableName,
                                                                        string.Join(",", (from c in cols select "\"" + c.Name + "\" = ? ").ToArray()),
-                                                                       pk.Name);
+                                                                       map.PkWhereSql);
             }
 
             try
@@ -1556,8 +1565,7 @@ namespace SQLite.Net2
             var c = 0;
             if (runInTransaction)
             {
-                using var db = Clone();
-                db.RunInTransaction(() =>
+                RunInTransaction(db =>
                 {
                     foreach (var r in objects)
                         c += db.Update(r);

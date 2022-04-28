@@ -118,7 +118,7 @@ namespace SQLite.Net2.Tests
             var testObjects = Enumerable.Range(1, 20).Select(i => new UniqueObj { Id = i }).ToList();
             testObjects[^1].Id = 1; // causes the insert to fail because of duplicate key
 
-            ExceptionAssert.Throws<SQLiteException>(() => _db.RunInTransaction(() => { _db.InsertAll(testObjects, false); }));
+            ExceptionAssert.Throws<SQLiteException>(() => _db.RunInTransaction(db => { db.InsertAll(testObjects, false); }));
             Assert.AreEqual(0, _db.Table<UniqueObj>().Count());
         }
 
@@ -165,7 +165,7 @@ namespace SQLite.Net2.Tests
         public void InsertAllSuccessInsideTransaction()
         {
             var testObjects = Enumerable.Range(1, 20).Select(i => new UniqueObj { Id = i }).ToList();
-            _db.RunInTransaction(() => { _db.InsertAll(testObjects); });
+            _db.RunInTransaction(db => { db.InsertAll(testObjects); });
 
             Assert.AreEqual(testObjects.Count, _db.Table<UniqueObj>().Count());
         }
