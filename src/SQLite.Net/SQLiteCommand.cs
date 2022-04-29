@@ -61,24 +61,30 @@ namespace SQLite.Net2
             _conn.TraceListener.WriteLine("Executing: {0}", this);
 
             var stmt = Prepare();
-            var r = sqlite.Step(stmt);
-            Finalize(stmt);
-            switch (r)
+            try
             {
-                case Result.Done or Result.Row:
+                var r = sqlite.Step(stmt);
+                switch (r)
                 {
-                    var rowsAffected = sqlite.Changes(_conn.Handle);
-                    return rowsAffected;
+                    case Result.Done or Result.Row:
+                    {
+                        var rowsAffected = sqlite.Changes(_conn.Handle);
+                        return rowsAffected;
+                    }
+                    case Result.Error:
+                    {
+                        var msg = sqlite.Errmsg16(_conn.Handle);
+                        throw new SQLiteException(r, msg);
+                    }
+                    case Result.Constraint when sqlite.ExtendedErrCode(_conn.Handle) == ExtendedResult.ConstraintNotNull:
+                        throw new NotNullConstraintViolationException(r, sqlite.Errmsg16(_conn.Handle));
+                    default:
+                        throw new SQLiteException(r, r.ToString());
                 }
-                case Result.Error:
-                {
-                    var msg = sqlite.Errmsg16(_conn.Handle);
-                    throw new SQLiteException(r, msg);
-                }
-                case Result.Constraint when sqlite.ExtendedErrCode(_conn.Handle) == ExtendedResult.ConstraintNotNull:
-                    throw new NotNullConstraintViolationException(r, sqlite.Errmsg16(_conn.Handle));
-                default:
-                    throw new SQLiteException(r, r.ToString());
+            }
+            finally
+            {
+                Finalize(stmt);
             }
         }
 
