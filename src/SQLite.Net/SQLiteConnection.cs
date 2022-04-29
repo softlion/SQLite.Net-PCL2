@@ -90,7 +90,7 @@ namespace SQLite.Net2
         /// </remarks>
         public virtual SQLiteConnection Clone() 
             => new (DatabasePath, databaseOpenFlags, StoreDateTimeAsTicks, Serializer, _tableMappings, ExtraTypeMappings, Resolver, encryptionKey);
-        
+
         /// <summary>
         /// Constructs a new SQLiteConnection and opens a SQLite database specified by databasePath.
         /// </summary>
@@ -111,8 +111,13 @@ namespace SQLite.Net2
         /// <param name="resolver">A contract resovler for resolving interfaces to concreate types during object creation</param>
         /// <param name="encryptionKey">When using SQL CIPHER, automatically sets the key (you won't need to override Clone() in this case)</param>
         /// <param name="configOption">Mode in which to open the db. Default to Serialized</param>
+        /// <param name="busyTimeout">
+        /// Sets a busy handler to sleep the specified amount of time when a table is locked.
+        /// The handler will sleep multiple times until a total time of busyTimeout has accumulated.
+        /// Default to 1s
+        /// </param>
         public SQLiteConnection(string databasePath, SQLiteOpenFlags openFlags = SQLiteOpenFlags.ReadWrite | SQLiteOpenFlags.Create, bool storeDateTimeAsTicks = true,  IBlobSerializer? serializer = null,  IDictionary<string, TableMapping>? tableMappings = null,
-             IDictionary<Type, string>? extraTypeMappings = null, IContractResolver? resolver = null, string? encryptionKey = null, ConfigOption configOption = ConfigOption.Serialized)
+             IDictionary<Type, string>? extraTypeMappings = null, IContractResolver? resolver = null, string? encryptionKey = null, ConfigOption configOption = ConfigOption.Serialized, TimeSpan? busyTimeout = null)
         {
             if (string.IsNullOrEmpty(databasePath))
                 throw new ArgumentException("Must be specified", nameof(databasePath));
@@ -149,7 +154,7 @@ namespace SQLite.Net2
                     throw new Exception("Invalid cipher key");
             }
 
-            BusyTimeout = TimeSpan.FromSeconds(0.1);
+            BusyTimeout = busyTimeout ?? TimeSpan.FromSeconds(1);
             Serializer = serializer;
             StoreDateTimeAsTicks = storeDateTimeAsTicks;
             ExtraTypeMappings = extraTypeMappings ?? new Dictionary<Type, string>();
@@ -179,8 +184,7 @@ namespace SQLite.Net2
             set
             {
                 _busyTimeout = value;
-                if (Handle != null)
-                    sqlite.BusyTimeout(Handle, (int) _busyTimeout.TotalMilliseconds);
+                sqlite.BusyTimeout(Handle, (int) _busyTimeout.TotalMilliseconds);
             }
         }
 
