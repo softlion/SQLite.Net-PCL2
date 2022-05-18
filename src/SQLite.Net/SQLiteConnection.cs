@@ -114,7 +114,7 @@ namespace SQLite.Net2
         /// <param name="busyTimeout">
         /// Sets a busy handler to sleep the specified amount of time when a table is locked.
         /// The handler will sleep multiple times until a total time of busyTimeout has accumulated.
-        /// Default to 1s
+        /// Default to 10s
         /// </param>
         public SQLiteConnection(string databasePath, SQLiteOpenFlags openFlags = SQLiteOpenFlags.ReadWrite | SQLiteOpenFlags.Create, bool storeDateTimeAsTicks = true,  IBlobSerializer? serializer = null,  IDictionary<string, TableMapping>? tableMappings = null,
              IDictionary<Type, string>? extraTypeMappings = null, IContractResolver? resolver = null, string? encryptionKey = null, ConfigOption configOption = ConfigOption.Serialized, TimeSpan? busyTimeout = null)
@@ -130,7 +130,9 @@ namespace SQLite.Net2
                 if (configOption > ConfigOption.SingleThread && sqlite.Threadsafe() == 0)
                     throw new ArgumentException("SQlite is not compiled with multithread and config option is set to multithread", nameof(configOption));
                 
-                sqlite.Config(configOption);
+                if(configOption > ConfigOption.Unknown)
+                    sqlite.Config(configOption);
+
                 sqlite.Initialize();
             }
             
@@ -154,7 +156,7 @@ namespace SQLite.Net2
                     throw new Exception("Invalid cipher key");
             }
 
-            BusyTimeout = busyTimeout ?? TimeSpan.FromSeconds(1);
+            BusyTimeout = busyTimeout ?? TimeSpan.FromSeconds(10);
             Serializer = serializer;
             StoreDateTimeAsTicks = storeDateTimeAsTicks;
             ExtraTypeMappings = extraTypeMappings ?? new Dictionary<Type, string>();

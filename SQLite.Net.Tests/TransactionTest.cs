@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using NUnit.Framework;
 
 
@@ -51,7 +52,7 @@ namespace SQLite.Net2.Tests
         public class TestDb : SQLiteConnection
         {
             public TestDb(String path)
-                : base(path)
+                : base(path, busyTimeout: TimeSpan.FromSeconds(10))
             {
                 CreateTable<TestObj>();
             }
@@ -169,6 +170,56 @@ namespace SQLite.Net2.Tests
             {
                 dbb.InsertOrReplaceAll(testObjects);
             });
+        }
+        
+        [Test]
+        public async Task LockedTransaction()
+        {
+            var newObjects = Enumerable.Range(1, 1000000).Select(i => new TestObj()).ToList();
+
+            Exception? lastException = null;
+            var hasFinished = false;
+
+
+            var t1 = Task.Run(() =>
+            {
+                try
+                {
+                    db.InsertAll(newObjects);
+                }
+                catch (Exception e)
+                {
+                    lastException = e;
+                }
+
+                hasFinished = true;
+            });
+            
+            
+            var t2 = Task.Run(() =>
+            {
+                try
+                {
+                    for (var i = 0; i < 10000; i++)
+                    {
+                        _ = db.Table<TestObj>().ToList();
+                        if(hasFinished)
+                            break;
+                    }
+
+                    var obj = db.Table<TestObj>().FirstOrDefault(o => o.Id == 8);
+                    Assert.IsNotNull(obj);
+                    obj.Toto = 12;
+                    db.Update(obj);
+                }
+                catch (Exception e)
+                {
+                    lastException = e;
+                }
+            });
+
+            await Task.WhenAll(t1, t2);
+            Assert.IsNull(lastException, lastException?.Message);
         }
     }
 }
