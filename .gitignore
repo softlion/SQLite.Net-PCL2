@@ -79,8 +79,8 @@ artifacts/
 *.svclog
 *.scc
 
-# Include meta files in src/ directory for unity.
-!src/*.meta
+# Include all files in src/ directory for unity.
+!src/**
 
 # Chutzpah Test files
 _Chutzpah*

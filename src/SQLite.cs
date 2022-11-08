@@ -226,12 +226,16 @@ namespace SQLite
 		/// <value>The date time style.</value>
 		internal System.Globalization.DateTimeStyles DateTimeStyle { get; private set; }
 
-#if USE_SQLITEPCL_RAW && !NO_SQLITEPCL_RAW_BATTERIES
+
 		static SQLiteConnection ()
 		{
+#if USE_SQLITEPCL_RAW && !NO_SQLITEPCL_RAW_BATTERIES
 			SQLitePCL.Batteries_V2.Init ();
-		}
+#elif USE_SQLITEPCL_RAW && NO_SQLITEPCL_RAW_BATTERIES && UNITY_2021_1_OR_NEWER
+			SQLitePCL.raw.SetProvider(new SQLitePCL.SQLite3Provider_sqlite3());
 #endif
+		}
+
 
 		/// <summary>
 		/// Constructs a new SQLiteConnection and opens a SQLite database specified by databasePath.

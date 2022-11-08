@@ -1,14 +1,16 @@
 {
     "name": "SQLite.Net",
     "rootNamespace": "SQLite",
-    "references": [
-    ],
-    "includePlatforms": [
-    ],
+    "references": [],
+    "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": true,
-    "overrideReferences": false,
-    "precompiledReferences": [],
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "SQLitePCLRaw.core.dll",
+        "SQLitePCLRaw.provider.internal.dll",
+        "SQLitePCLRaw.provider.sqlite3.dll"
+    ],
     "autoReferenced": true,
     "defineConstraints": [],
     "versionDefines": [],
