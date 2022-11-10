@@ -1,0 +1,15 @@
+{
+  "author": {
+    "name": "Machine Zone"
+  },
+  "dependencies": {
+  },
+  "description": "Contains Sqlite-Net implementation",
+  "displayName": "Sqlite-Net",
+  "keywords": [
+    "sqlite"
+  ],
+  "name": "sqlite-net",
+  "unity": "2020.1",
+  "version": "1.0.0"
+}

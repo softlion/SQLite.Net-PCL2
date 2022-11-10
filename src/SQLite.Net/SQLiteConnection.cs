@@ -70,6 +70,11 @@ namespace SQLite.Net2
         
         static SQLiteConnection()
         {
+            #if USE_SQLITEPCL_RAW && !NO_SQLITEPCL_RAW_BATTERIES
+                SQLitePCL.Batteries_V2.Init ();
+            #elif USE_SQLITEPCL_RAW && NO_SQLITEPCL_RAW_BATTERIES && UNITY_2021_1_OR_NEWER
+                SQLitePCL.raw.SetProvider(new SQLitePCL.SQLite3Provider_sqlite3());
+            #endif    
             if (_preserveDuringLinkMagic)
             {
                 // ReSharper disable once UseObjectOrCollectionInitializer
