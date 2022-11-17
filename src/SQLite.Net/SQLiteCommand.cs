@@ -172,28 +172,36 @@ namespace SQLite.Net2
                 while (sqlite.Step(stmt) == Result.Row)
                 {
                     var obj = isPrimitiveType ? null : _conn.Resolver.CreateObject(map.MappedType);
-                    for (var i = 0; i < cols.Length; i++)
+                    if (obj is IColumnDeserializer serializer)
                     {
-                        ColType colType;
-                        object val;
-
-                        //Support of primitive types
-                        if (isPrimitiveType)
+                        serializer.Deserialize(new SqliteColumnReader(sqlite, stmt, cols));
+                    }
+                    else
+                    {
+                        for (var i = 0; i < cols.Length; i++)
                         {
-                            //Assert(cols.Length == 1)
+                            ColType colType;
+                            object val;
+
+                            //Support of primitive types
+                            if (isPrimitiveType)
+                            {
+                                //Assert(cols.Length == 1)
+                                colType = sqlite.ColumnType(stmt, i);
+                                val = ReadCol(stmt, i, colType, cols[i].ColumnType);
+                                yield return (T)Convert.ChangeType(val, type, CultureInfo.CurrentCulture);
+                                break;
+                            }
+
+                            if (cols[i] == null)
+                            {
+                                continue;
+                            }
+
                             colType = sqlite.ColumnType(stmt, i);
                             val = ReadCol(stmt, i, colType, cols[i].ColumnType);
-                            yield return (T) Convert.ChangeType(val, type, CultureInfo.CurrentCulture);
-                            break;
+                            cols[i].SetValue(obj, val);
                         }
-
-                        if (cols[i] == null)
-                        {
-                            continue;
-                        }
-                        colType = sqlite.ColumnType(stmt, i);
-                        val = ReadCol(stmt, i, colType, cols[i].ColumnType);
-                        cols[i].SetValue(obj, val);
                     }
 
                     if (!isPrimitiveType)
@@ -653,6 +661,85 @@ namespace SQLite.Net2
             throw new NotSupportedException("Don't know how to read " + clrType);
         }
 
+        private class SqliteColumnReader : IColumnReader
+        {
+            private IDbStatement _stmt;
+            private SqliteApi _sqlite;
+                
+            public SqliteColumnReader(SqliteApi sqlite, IDbStatement stmt, TableMapping.Column[] columns)
+            {
+                _sqlite = sqlite;
+                _stmt = stmt;
+                Columns = columns;
+            }
+
+            public TableMapping.Column[] Columns { get; }
+            
+            public int ColumnCount => _sqlite.ColumnCount(_stmt);
+
+            public string GetColumnName(int col) => _sqlite.ColumnName16(_stmt, col);
+            
+            public bool ReadBoolean(int col)
+            {
+                return _sqlite.ColumnInt(_stmt, col) == 1;
+            }
+
+            public byte ReadByte(int col)
+            {
+                return (byte)_sqlite.ColumnInt(_stmt, col);
+            }
+
+            public sbyte ReadSByte(int col)
+            {
+                return (sbyte)_sqlite.ColumnInt(_stmt, col);
+            }
+
+            public short ReadInt16(int col)
+            {
+                return (short)_sqlite.ColumnInt(_stmt, col);
+            }
+
+            public ushort ReadUInt16(int col)
+            {
+                return (ushort)_sqlite.ColumnInt(_stmt, col);
+            }
+
+            public int ReadInt32(int col)
+            {
+                return _sqlite.ColumnInt(_stmt, col);
+            }
+
+            public uint ReadUInt32(int col)
+            {
+                return (uint)_sqlite.ColumnInt(_stmt, col);
+            }
+
+            public long ReadInt64(int col)
+            {
+                return _sqlite.ColumnInt64(_stmt, col);
+            }
+
+            public ulong ReadUInt64(int col)
+            {
+                return (ulong)_sqlite.ColumnInt64(_stmt, col);
+            }
+
+            public float ReadSingle(int col)
+            {
+                return (float)_sqlite.ColumnDouble(_stmt, col);
+            }
+
+            public double ReadDouble(int col)
+            {
+                return _sqlite.ColumnDouble(_stmt, col);
+            }
+
+            public string ReadString(int col)
+            {
+                return _sqlite.ColumnText16(_stmt, col);
+            }
+        }
+        
         private class Binding
         {
             public string Name { get; set; }
