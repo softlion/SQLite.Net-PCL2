@@ -24,7 +24,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace SQLite.Net2
@@ -35,9 +37,13 @@ namespace SQLite.Net2
         private Column[] _insertColumns, _insertOrReplaceColumns;
 
 
-		public TableMapping(Type type, IEnumerable<PropertyInfo> properties, CreateFlags createFlags = CreateFlags.None, IColumnInformationProvider infoProvider = null)
+        public TableMapping(
+            Type type,
+            IEnumerable<MemberInfo> properties,
+            CreateFlags createFlags = CreateFlags.None,
+            IColumnInformationProvider? infoProvider = null)
         {
-			infoProvider ??= new DefaultColumnInformationProvider();
+            infoProvider ??= new DefaultColumnInformationProvider();
 
             MappedType = type;
 
@@ -50,11 +56,42 @@ namespace SQLite.Net2
             var cols = new List<Column>();
             foreach (var p in props)
             {
-				var ignore = infoProvider.IsIgnored (p);
+                var ignore = infoProvider.IsIgnored(p);
+                if (ignore) continue;
 
-                if (p.CanWrite && !ignore)
-                    cols.Add(new Column(p, createFlags));
+                var memberType = infoProvider.GetMemberType(p);
+                // Check if this is a ValueTuple<...>
+                if (memberType.GetInterface(nameof(ITuple)) != null && memberType.IsValueType)
+                {
+                    // If it is, create a column per member of the value tuple.
+                    var names = p.GetCustomAttribute<TupleElementNamesAttribute>();
+                    var args = memberType.GetGenericArguments();
+                    for (var i = 0; i < args.Length; ++i)
+                    {
+                        var tupleElementType = args[i];
+                        if (tupleElementType.GetInterface(nameof(ITuple)) != null)
+                        {
+                            throw new NotSupportedException("Nested tuple types are not supported.");
+                        }
+                        
+                        cols.Add(new Column(
+                            p,
+                            createFlags,
+                            infoProvider,
+                            i,
+                            tupleElementType,
+                            names?.TransformNames[i] ?? $"Item{i + 1}"));
+                    }
+                }
+                else
+                {
+                    cols.Add(new Column(
+                        p,
+                        createFlags,
+                        infoProvider));
+                }
             }
+
             Columns = cols.ToArray();
             foreach (var c in Columns)
             {
@@ -69,7 +106,9 @@ namespace SQLite.Net2
             if (PK != null)
             {
                 GetByPrimaryKeySql = $"select * from \"{TableName}\" where \"{PK.Name}\" = ?";
-                PkWhereSql = PKs.Aggregate(new StringBuilder(), (sb, pk) => sb.AppendFormat(" \"{0}\" = ? and", pk.Name), sb => sb.Remove(sb.Length - 3, 3).ToString());
+                PkWhereSql = PKs.Aggregate(new StringBuilder(),
+                    (sb, pk) => sb.AppendFormat(" \"{0}\" = ? and", pk.Name),
+                    sb => sb.Remove(sb.Length - 3, 3).ToString());
                 GetByPrimaryKeysSql = $"select * from \"{TableName}\" where {PkWhereSql}";
             }
             else
@@ -85,11 +124,12 @@ namespace SQLite.Net2
             if (numberOfKeys == PKs.Count)
                 return PkWhereSql;
 
-            return PKs.Take(numberOfKeys).Aggregate(new StringBuilder(), (sb, pk) => sb.AppendFormat(" \"{0}\" = ? and", pk.Name), sb => sb.Remove(sb.Length - 3, 3).ToString());
+            return PKs.Take(numberOfKeys).Aggregate(new StringBuilder(),
+                (sb, pk) => sb.AppendFormat(" \"{0}\" = ? and", pk.Name), sb => sb.Remove(sb.Length - 3, 3).ToString());
         }
 
 
-        public string GetByPrimaryKeysSqlForPartialKeys(int numberOfKeys) 
+        public string GetByPrimaryKeysSqlForPartialKeys(int numberOfKeys)
             => $"select * from \"{TableName}\" where {PkWhereSqlForPartialKeys(numberOfKeys)}";
 
         public readonly List<Column> PKs = new();
@@ -105,7 +145,7 @@ namespace SQLite.Net2
         public bool HasAutoIncPK { get; }
 
         public Column[] InsertColumns => _insertColumns ??= Columns.Where(c => !c.IsAutoInc).ToArray();
-        public Column[] InsertOrReplaceColumns  => _insertOrReplaceColumns  ??= Columns.ToArray();
+        public Column[] InsertOrReplaceColumns => _insertOrReplaceColumns ??= Columns.ToArray();
 
 
         public void SetAutoIncPK(object obj, long id)
@@ -124,21 +164,31 @@ namespace SQLite.Net2
 
         public class Column
         {
-            private readonly PropertyInfo _prop;
-
+            private readonly MemberInfo _prop;
+            private readonly IColumnInformationProvider _infoProvider;
+            
             public Column()
             {
             }
 
-    
-            public Column(PropertyInfo prop, CreateFlags createFlags = CreateFlags.None, IColumnInformationProvider infoProvider = null)
+            public Column(
+                MemberInfo prop,
+                CreateFlags createFlags,
+                IColumnInformationProvider? infoProvider,
+                int tupleElement = -1,
+                Type? tupleElementType = null,
+                string? tupleElementName = null)
             {
-				infoProvider ??= new DefaultColumnInformationProvider();
+                _infoProvider = infoProvider ?? new DefaultColumnInformationProvider();
 
                 _prop = prop;
-		Name = infoProvider.GetColumnName(prop);
+                Name = tupleElementName == null
+                    ? _infoProvider.GetColumnName(prop)
+                    : $"{_infoProvider.GetColumnName(prop)}_{tupleElementName}";
+
+                var columnType = tupleElementType ?? _infoProvider.GetMemberType(prop);
                 //If this type is Nullable<T> then Nullable.GetUnderlyingType returns the T, otherwise it returns null, so get the actual type instead
-                ColumnType = Nullable.GetUnderlyingType(prop.PropertyType) ?? prop.PropertyType;
+                ColumnType = Nullable.GetUnderlyingType(columnType) ?? columnType;
                 Collation = Orm.Collation(prop);
 
                 IsPK = Orm.IsPK(prop) ||
@@ -146,8 +196,8 @@ namespace SQLite.Net2
                         string.Compare(prop.Name, Orm.ImplicitPkName, StringComparison.OrdinalIgnoreCase) == 0);
 
                 var isAuto = Orm.IsAutoInc(prop) ||
-                              (IsPK && ((createFlags & CreateFlags.AutoIncPK) == CreateFlags.AutoIncPK));
-                IsAutoGuid = isAuto && ColumnType == typeof (Guid);
+                             (IsPK && ((createFlags & CreateFlags.AutoIncPK) == CreateFlags.AutoIncPK));
+                IsAutoGuid = isAuto && ColumnType == typeof(Guid);
                 IsAutoInc = isAuto && !IsAutoGuid;
 
                 DefaultValue = Orm.GetDefaultValue(prop);
@@ -158,13 +208,16 @@ namespace SQLite.Net2
                     && ((createFlags & CreateFlags.ImplicitIndex) == CreateFlags.ImplicitIndex)
                     && Name.EndsWith(Orm.ImplicitIndexSuffix, StringComparison.OrdinalIgnoreCase))
                 {
-                    Indices = new[] {new IndexedAttribute()};
+                    Indices = new[] { new IndexedAttribute() };
                 }
+
                 IsNullable = !(IsPK || Orm.IsMarkedNotNull(prop));
                 MaxStringLength = Orm.MaxStringLength(prop);
+                TupleElement = tupleElement;
+                TupleElementName = tupleElementName;
             }
 
-    
+
             public string Name { get; }
             public string PropertyName => _prop.Name;
             public Type ColumnType { get; internal set; }
@@ -176,6 +229,8 @@ namespace SQLite.Net2
             public bool IsNullable { get; }
             public int? MaxStringLength { get; }
             public object DefaultValue { get; }
+            public int TupleElement { get; }
+            public string? TupleElementName { get; }
 
             /// <summary>
             ///     Set column value.
@@ -184,50 +239,75 @@ namespace SQLite.Net2
             /// <param name="val"></param>
             public void SetValue(object obj, object val)
             {
-                var propType = _prop.PropertyType;
+                var propType = _infoProvider.GetMemberType(_prop);
                 var typeInfo = propType.GetTypeInfo();
+                object valueToSet;
 
-                if (typeInfo.IsGenericType && propType.GetGenericTypeDefinition() == typeof (Nullable<>))
+                if (typeInfo.IsGenericType && propType.GetGenericTypeDefinition() == typeof(Nullable<>))
                 {
                     var typeCol = propType.GetTypeInfo().GenericTypeArguments;
-                    if (typeCol.Length > 0)
+                    var nullableType = typeCol[0];
+                    var baseType = nullableType.GetTypeInfo().BaseType;
+                    if (baseType == typeof(Enum))
                     {
-                        var nullableType = typeCol[0];
-                        var baseType = nullableType.GetTypeInfo().BaseType;
-                        if (baseType == typeof (Enum))
-                        {
-                            SetEnumValue(obj, nullableType, val);
-                        }
-                        else
-                        {
-                            _prop.SetValue(obj, val, null);
-                        }
+                        valueToSet = AsEnumValue(obj, nullableType, val);
+                    }
+                    else
+                    {
+                        valueToSet = val;
                     }
                 }
-                else if (typeInfo.BaseType == typeof (Enum))
+                else if (typeInfo.BaseType == typeof(Enum))
                 {
-                    SetEnumValue(obj, propType, val);
+                    valueToSet = AsEnumValue(obj, propType, val);
                 }
                 else
                 {
-                    _prop.SetValue(obj, val, null);
+                    valueToSet = val;
                 }
-            }
 
-            private void SetEnumValue(object obj, Type type, object value)
-            {
-                var result = value;
-                if (result != null)
+                // If we're a value tuple then we need to recreate the tuple with the new value and set that
+                // on the property.
+                if (TupleElement != -1)
                 {
-                    result = Enum.ToObject(type, result);
-                    _prop.SetValue(obj, result, null);
+                    var tupleObj = (ITuple)_infoProvider.GetValue(_prop, obj);
+                    var args = new object[tupleObj.Length];
+                    for (var i = 0; i < tupleObj.Length; ++i)
+                    {
+                        args[i] = i == TupleElement ? valueToSet : tupleObj[i];
+                    }
+
+                    valueToSet = Activator.CreateInstance(_infoProvider.GetMemberType(_prop), args);
+                }
+
+                switch (_prop)
+                {
+                    case PropertyInfo pi:
+                        pi.SetValue(obj, valueToSet);
+                        break;
+                    case FieldInfo fi:
+                        fi.SetValue(obj, valueToSet);
+                        break;
                 }
             }
 
-    
+            private object AsEnumValue(object obj, Type type, object? value)
+            {
+                var result = value ?? 0;
+                return Enum.ToObject(type, result);
+            }
+
             public object GetValue(object obj)
             {
-                return _prop.GetValue(obj, null);
+                var result = _infoProvider.GetValue(_prop, obj);
+                
+                // If we're a value tuple then we need to get the nested value in the tuple.
+                if (TupleElement != -1 && result is ITuple tuple)
+                {
+                    return tuple[TupleElement];
+                }
+
+                return result;
             }
         }
     }

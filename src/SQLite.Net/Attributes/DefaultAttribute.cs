@@ -2,7 +2,7 @@ using System;
 
 namespace SQLite.Net2
 {
-    [AttributeUsage(AttributeTargets.Property)]
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
     public class DefaultAttribute : Attribute
     {
         /// <summary>

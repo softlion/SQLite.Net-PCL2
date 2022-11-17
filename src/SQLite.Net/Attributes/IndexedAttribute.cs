@@ -24,7 +24,7 @@ using System;
 
 namespace SQLite.Net2
 {
-    [AttributeUsage(AttributeTargets.Property, AllowMultiple = true)]
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = true)]
     public class IndexedAttribute : Attribute
     {
         public IndexedAttribute()

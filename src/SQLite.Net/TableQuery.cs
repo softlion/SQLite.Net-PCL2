@@ -1,6 +1,6 @@
 //
 // Copyright (c) 2012 Krueger Systems, Inc.
-// Copyright (c) 2013 Øystein Krog (oystein.krog@gmail.com)
+// Copyright (c) 2013 ï¿½ystein Krog (oystein.krog@gmail.com)
 // 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,6 +26,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace SQLite.Net2
@@ -322,6 +324,25 @@ namespace SQLite.Net2
             return Connection.CreateCommand(cmdText.ToString(), args.ToArray());
         }
 
+        private static bool ExpressionHasParameterRoot(MemberExpression expr)
+        {
+            while (expr.Expression != null)
+            {
+                if (expr.Expression.NodeType == ExpressionType.Parameter)
+                    return true;
+                if (expr.Expression is MemberExpression me)
+                {
+                    expr = me;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+
+            return false;
+        }
+        
         private CompileResult CompileExpr( Expression expr, List<object> queryArgs)
         {
             if (expr == null)
@@ -484,6 +505,34 @@ namespace SQLite.Net2
                         CommandText = "\"" + columnName + "\""
                     };
                 }
+                
+                if (mem.Expression != null && ExpressionHasParameterRoot(mem))
+                {
+                    // This only supports a single level of nesting. That is  x => x.Key.item is allowed
+                    // but x => x.Key.item.value is not allowed.
+                    
+                    // Given x => x.A.B this gets A
+                    var parentProperty = (MemberExpression)mem.Expression;
+                    var memberName = mem.Member.Name;
+                    
+                    // if A is a ValueTuple with element names, this will retrieve the names for use in determining the
+                    // column names.
+                    var names = parentProperty.Member.GetCustomAttribute<TupleElementNamesAttribute>();
+                    if (names != null)
+                    {
+                        var index = int.Parse(memberName.Substring(4)) - 1;
+                        memberName = names.TransformNames[index];
+                    }
+                    
+                    // Compose the parent name (A) with the child name to get the column name.
+                    // A_B
+                    var name = parentProperty.Member.Name + "_" + memberName;
+                    return new CompileResult
+                    {
+                        CommandText = "\"" + name + "\""
+                    };
+                }
+                
                 object obj = null;
                 if (mem.Expression != null)
                 {
@@ -668,7 +717,19 @@ namespace SQLite.Net2
             return Where(predExpr).Count();
         }
 
+        public T First(Expression<Func<T, bool>> predicate)
+        {
+            var query = Where(predicate).Take(1);
+            return query.ToList().First();
+        }
 
+
+        public T FirstOrDefault(Expression<Func<T, bool>> predicate)
+        {
+            var query = Where(predicate).Take(1);
+            return query.ToList().FirstOrDefault();
+        }
+        
         public T First()
         {
             var query = Take(1);

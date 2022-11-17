@@ -70,12 +70,33 @@ namespace SQLite.Net2.Tests
 
 		public class TestColumnInformationProvider : IColumnInformationProvider
 		{
-			public string GetColumnName(PropertyInfo p)
+			public string GetColumnName(MemberInfo p)
 			{
-				return p.Name;
+				var colAttr = p.GetCustomAttributes<ColumnAttribute>(true).FirstOrDefault();
+				return colAttr == null ? p.Name : colAttr.Name;
 			}
 
-			public bool IsIgnored(PropertyInfo p)
+			public Type GetMemberType(MemberInfo m)
+			{
+				return m switch
+				{
+					PropertyInfo p => p.PropertyType,
+					FieldInfo f => f.FieldType,
+					_ => throw new NotSupportedException($"{m.GetType()} is not supported.")
+				};
+			}
+
+			public object GetValue(MemberInfo m, object obj)
+			{
+				return m switch
+				{
+					PropertyInfo p => p.GetValue(obj),
+					FieldInfo f => f.GetValue(obj),
+					_ => throw new NotSupportedException($"{m.GetType()} is not supported.")
+				};
+			}
+
+			public bool IsIgnored(MemberInfo p)
 			{
 				return false;
 			}
@@ -97,11 +118,11 @@ namespace SQLite.Net2.Tests
 			{
 				return false;
 			}
-			public int? MaxStringLength(PropertyInfo p)
+			public int? MaxStringLength(MemberInfo p)
 			{
 				return null;
 			}
-			public object GetDefaultValue(PropertyInfo p)
+			public object GetDefaultValue(MemberInfo p)
 			{
 				var defaultValueAttributes = p.GetCustomAttributes<TestDefaultValueAttribute> ();
 				if (!defaultValueAttributes.Any())

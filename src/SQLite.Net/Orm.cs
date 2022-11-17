@@ -161,12 +161,12 @@ namespace SQLite.Net2
 			return ColumnInformationProvider.GetIndices (p);
         }
 
-        internal static int? MaxStringLength(PropertyInfo p)
+        internal static int? MaxStringLength(MemberInfo p)
         {
 			return ColumnInformationProvider.MaxStringLength (p);
         }
 
-        internal static object GetDefaultValue(PropertyInfo p)
+        internal static object GetDefaultValue(MemberInfo p)
         {
 			return ColumnInformationProvider.GetDefaultValue (p);
         }

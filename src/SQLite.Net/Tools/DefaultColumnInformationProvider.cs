@@ -9,13 +9,13 @@ namespace SQLite.Net2
 	{
 		#region IColumnInformationProvider implementation
 
-		public string GetColumnName(PropertyInfo p)
+		public string GetColumnName(MemberInfo p)
 		{
 			var colAttr = p.GetCustomAttributes<ColumnAttribute>(true).FirstOrDefault();
 			return colAttr == null ? p.Name : colAttr.Name;
 		}
 
-		public bool IsIgnored(PropertyInfo p)
+		public bool IsIgnored(MemberInfo p)
 		{
 			return p.IsDefined(typeof (IgnoreAttribute), true);
 		}
@@ -44,7 +44,7 @@ namespace SQLite.Net2
 			return m.GetCustomAttributes<AutoIncrementAttribute>().Any();
 		}
 
-		public int? MaxStringLength(PropertyInfo p)
+		public int? MaxStringLength(MemberInfo p)
 		{
 			foreach (var attribute in p.GetCustomAttributes<MaxLengthAttribute>())
 			{
@@ -53,7 +53,7 @@ namespace SQLite.Net2
 			return null;
 		}
 
-		public object GetDefaultValue(PropertyInfo p)
+		public object GetDefaultValue(MemberInfo p)
 		{
 			foreach (var attribute in p.GetCustomAttributes<DefaultAttribute>())
 			{
@@ -61,15 +61,15 @@ namespace SQLite.Net2
 				{
 					if (!attribute.UseProperty)
 					{
-						return Convert.ChangeType(attribute.Value, p.PropertyType);
+						return Convert.ChangeType(attribute.Value, GetMemberType(p));
 					}
 
 					var obj = Activator.CreateInstance(p.DeclaringType);
-					return p.GetValue(obj);
+					return GetValue(p, obj);
 				}
 				catch (Exception exception)
 				{
-					throw new Exception("Unable to convert " + attribute.Value + " to type " + p.PropertyType, exception);
+					throw new Exception("Unable to convert " + attribute.Value + " to type " + GetMemberType(p), exception);
 				}
 			}
 			return null;
@@ -81,6 +81,25 @@ namespace SQLite.Net2
 			return attrs.Any();
 		}
 
+		public Type GetMemberType(MemberInfo m)
+		{
+			return m switch
+			{
+				PropertyInfo p => p.PropertyType,
+				FieldInfo f => f.FieldType,
+				_ => throw new NotSupportedException($"{m.GetType()} is not supported.")
+			};
+		}
+
+		public object GetValue(MemberInfo m, object obj)
+		{
+			return m switch
+			{
+				PropertyInfo p => p.GetValue(obj),
+				FieldInfo f => f.GetValue(obj),
+				_ => throw new NotSupportedException($"{m.GetType()} is not supported.")
+			};
+		}
 		#endregion
 	}
 }

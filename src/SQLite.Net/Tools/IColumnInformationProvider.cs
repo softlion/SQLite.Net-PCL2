@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
 using System.Collections.Generic;
 
 namespace SQLite.Net2
@@ -8,12 +9,14 @@ namespace SQLite.Net2
 		bool IsPK(MemberInfo m);
 		string Collation(MemberInfo m);
 		bool IsAutoInc(MemberInfo m);
-		int? MaxStringLength(PropertyInfo p);
+		int? MaxStringLength(MemberInfo p);
 		IEnumerable<IndexedAttribute> GetIndices(MemberInfo p);
-		object GetDefaultValue(PropertyInfo p);
+		object GetDefaultValue(MemberInfo p);
 		bool IsMarkedNotNull(MemberInfo p);
-		bool IsIgnored(PropertyInfo p);
-		string GetColumnName(PropertyInfo p);
+		bool IsIgnored(MemberInfo p);
+		string GetColumnName(MemberInfo p);
+		Type GetMemberType(MemberInfo m);
+		object GetValue(MemberInfo m, object obj);
 	}
 }
 
