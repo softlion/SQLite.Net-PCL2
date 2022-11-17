@@ -674,8 +674,6 @@ namespace SQLite.Net2
             }
 
             public TableMapping.Column[] Columns { get; }
-            
-            public int ColumnCount => _sqlite.ColumnCount(_stmt);
 
             public string GetColumnName(int col) => _sqlite.ColumnName16(_stmt, col);
             
