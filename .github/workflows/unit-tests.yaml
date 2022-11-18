@@ -1,0 +1,25 @@
+name: Run Tests
+on:
+  workflow_call:
+
+jobs:
+  unit-tests:
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '5.0.x'
+
+      - uses: zyborg/dotnet-tests-report@v1
+        id: tests
+        with:
+          project_path: ./
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          report_name: ${{ github.job }} / Test Results
+          # fail the check if any tests failed
+          set_check_status_from_test_outcome: true
+          fail_build_on_failed_tests: true
