@@ -236,7 +236,7 @@ namespace SQLite.Net2
                 mem = lambda.Body as MemberExpression;
             }
 
-            if (mem == null || (mem.Expression.NodeType != ExpressionType.Parameter))
+            if (mem == null || !ExpressionHasParameterRoot(mem))
             {
                 throw new NotSupportedException("Order By does not support: " + orderExpr);
             }
@@ -248,7 +248,7 @@ namespace SQLite.Net2
             }
             q._orderBys.Add(new Ordering
             {
-                ColumnName = Table.FindColumnWithPropertyName(mem.Member.Name).Name,
+                ColumnName = GetColumnName(mem),
                 Ascending = asc
             });
             return q;
@@ -342,7 +342,47 @@ namespace SQLite.Net2
 
             return false;
         }
-        
+
+        private string GetColumnName(MemberExpression mem)
+        {
+            if (mem is null || mem.Expression is null)
+            {
+                throw new ArgumentNullException(nameof(mem));
+            }
+            
+            if (mem.Expression != null && mem.Expression.NodeType == ExpressionType.Parameter)
+            {
+                //
+                // This is a column of our table, output just the column name
+                // Need to translate it if that column name is mapped
+                //
+                var columnName = Table.FindColumnWithPropertyName(mem.Member.Name).Name;
+                return columnName;
+            }
+            // Not a direct member expression, must be a nested one.
+
+            // This only supports a single level of nesting. That is  x => x.Key.item is allowed
+            // but x => x.Key.item.value is not allowed.
+
+            // Given x => x.A.B this gets A
+            var parentProperty = (MemberExpression)mem.Expression;
+            var memberName = mem.Member.Name;
+
+            // if A is a ValueTuple with element names, this will retrieve the names for use in determining the
+            // column names.
+            var names = parentProperty.Member.GetCustomAttribute<TupleElementNamesAttribute>();
+            if (names != null)
+            {
+                var index = int.Parse(memberName.Substring(4)) - 1;
+                memberName = names.TransformNames[index];
+            }
+
+            // Compose the parent name (A) with the child name to get the column name.
+            // A_B
+            var name = parentProperty.Member.Name + "_" + memberName;
+            return name;
+        }
+
         private CompileResult CompileExpr( Expression expr, List<object> queryArgs)
         {
             if (expr == null)
@@ -493,46 +533,14 @@ namespace SQLite.Net2
             {
                 var mem = (MemberExpression) expr;
 
-                if (mem.Expression != null && mem.Expression.NodeType == ExpressionType.Parameter)
-                {
-                    //
-                    // This is a column of our table, output just the column name
-                    // Need to translate it if that column name is mapped
-                    //
-                    var columnName = Table.FindColumnWithPropertyName(mem.Member.Name).Name;
-                    return new CompileResult
-                    {
-                        CommandText = "\"" + columnName + "\""
-                    };
-                }
-                
                 if (mem.Expression != null && ExpressionHasParameterRoot(mem))
                 {
-                    // This only supports a single level of nesting. That is  x => x.Key.item is allowed
-                    // but x => x.Key.item.value is not allowed.
-                    
-                    // Given x => x.A.B this gets A
-                    var parentProperty = (MemberExpression)mem.Expression;
-                    var memberName = mem.Member.Name;
-                    
-                    // if A is a ValueTuple with element names, this will retrieve the names for use in determining the
-                    // column names.
-                    var names = parentProperty.Member.GetCustomAttribute<TupleElementNamesAttribute>();
-                    if (names != null)
-                    {
-                        var index = int.Parse(memberName.Substring(4)) - 1;
-                        memberName = names.TransformNames[index];
-                    }
-                    
-                    // Compose the parent name (A) with the child name to get the column name.
-                    // A_B
-                    var name = parentProperty.Member.Name + "_" + memberName;
                     return new CompileResult
                     {
-                        CommandText = "\"" + name + "\""
+                        CommandText = "\"" + GetColumnName(mem) + "\""
                     };
                 }
-                
+
                 object obj = null;
                 if (mem.Expression != null)
                 {
@@ -701,6 +709,38 @@ namespace SQLite.Net2
             throw new NotSupportedException("Cannot get SQL for: " + n);
         }
 
+        public TResult Sum<TResult>(Expression<Func<T, TResult>> selectExpr)
+        {
+            if (selectExpr.Body is MemberExpression me)
+            {
+                var name = GetColumnName(me);
+                return GenerateCommand($"SUM({name})").ExecuteScalar<TResult>();
+            }
+            
+            throw new ArgumentException($"Unknown expression: {selectExpr}");
+        }
+        
+        public TResult Min<TResult>(Expression<Func<T, TResult>> selectExpr)
+        {
+            if (selectExpr.Body is MemberExpression me)
+            {
+                var name = GetColumnName(me);
+                return GenerateCommand($"MIN({name})").ExecuteScalar<TResult>();
+            }
+            
+            throw new ArgumentException($"Unknown expression: {selectExpr}");
+        }
+        
+        public TResult Max<TResult>(Expression<Func<T, TResult>> selectExpr)
+        {
+            if (selectExpr.Body is MemberExpression me)
+            {
+                var name = GetColumnName(me);
+                return GenerateCommand($"MAX({name})").ExecuteScalar<TResult>();
+            }
+            
+            throw new ArgumentException($"Unknown expression: {selectExpr}");
+        }
 
         public int Count()
         {

@@ -50,6 +50,34 @@ namespace SQLite.Net2.Tests
             Assert.Throws<NotSupportedException>(() => db.GetMapping<BadTupleModel>());
             Assert.Throws<NotSupportedException >(() => db.CreateTable<BadTupleModel>());
         }
+
+        [Test]
+        public void CanOrderByTupleMember()
+        {
+            var db = new SQLiteConnection(TestPath.CreateTemporaryDatabase());
+            db.CreateTable<TestModelWithValueTuple>();
+            db.InsertAll(new[]
+            {
+                new TestModelWithValueTuple
+                {
+                    Value = (1, "hello"),
+                    HasReadEula = true
+                },
+                new TestModelWithValueTuple
+                {
+                    Value = (2, "world"),
+                    HasReadEula = false
+                }
+            });
+
+            var allEntriesDescending = db
+                .Table<TestModelWithValueTuple>().OrderByDescending(x => x.Value.Item1)
+                .ToList();
+            
+            Assert.That(allEntriesDescending.Count, Is.EqualTo(2));
+            Assert.That(allEntriesDescending[0].Value.Item1, Is.EqualTo(2));
+            Assert.That(allEntriesDescending[1].Value.Item1, Is.EqualTo(1));
+        }
         
         [Test]
         public void CanOperateOnSingleLevelValueTuples()

@@ -42,5 +42,20 @@ namespace SQLite.Net2.Tests
 
             Assert.AreEqual(Count*2, r);
         }
+
+        [Test]
+        public void CanUseIntegerSumMinAndMax()
+        {
+            SQLiteConnection db = CreateDb();
+
+            var table = db.Table<TestTable>();
+            var r = table.Sum(x => x.Two);
+            Assert.That(r, Is.EqualTo(Count * 2));
+
+            var min = table.Min(x => x.Id);
+            Assert.That(min, Is.EqualTo(1));
+            var max = table.Max(x => x.Id);
+            Assert.That(max, Is.EqualTo(Count));
+        }
     }
 }
