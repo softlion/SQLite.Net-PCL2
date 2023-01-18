@@ -31,7 +31,7 @@ namespace SQLite.Net2.Tests
 
         private IEnumerable<SQLiteConnection.ColumnInfo> GetExpectedColumnInfos(Type type)
         {
-            var expectedValues = from prop in ReflectionService.GetPublicInstanceProperties(type)
+            var expectedValues = from prop in ReflectionService.GetPublicInstanceProperties(type, new DefaultColumnInformationProvider())
                                  select new SQLiteConnection.ColumnInfo
                                  {
                                      Name = prop.Name,

@@ -19,6 +19,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SQLite.Net2", "src\SQLite.N
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SQLite.Net2.Tests", "SQLite.Net.Tests\SQLite.Net2.Tests.csproj", "{C8A21AC1-D63B-4908-BE59-98F73D9C9061}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SQLite.Net2.Tests.Deps", "SQLite.Net2.Tests.Deps\SQLite.Net2.Tests.Deps.csproj", "{026CA24B-9C13-40B0-AF73-EB4721DF5B7D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -97,6 +99,30 @@ Global
 		{C8A21AC1-D63B-4908-BE59-98F73D9C9061}.Release|x64.Build.0 = Release|Any CPU
 		{C8A21AC1-D63B-4908-BE59-98F73D9C9061}.Release|x86.ActiveCfg = Release|Any CPU
 		{C8A21AC1-D63B-4908-BE59-98F73D9C9061}.Release|x86.Build.0 = Release|Any CPU
+		{026CA24B-9C13-40B0-AF73-EB4721DF5B7D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{026CA24B-9C13-40B0-AF73-EB4721DF5B7D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{026CA24B-9C13-40B0-AF73-EB4721DF5B7D}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{026CA24B-9C13-40B0-AF73-EB4721DF5B7D}.Debug|ARM.Build.0 = Debug|Any CPU
+		{026CA24B-9C13-40B0-AF73-EB4721DF5B7D}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{026CA24B-9C13-40B0-AF73-EB4721DF5B7D}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{026CA24B-9C13-40B0-AF73-EB4721DF5B7D}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{026CA24B-9C13-40B0-AF73-EB4721DF5B7D}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{026CA24B-9C13-40B0-AF73-EB4721DF5B7D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{026CA24B-9C13-40B0-AF73-EB4721DF5B7D}.Debug|x64.Build.0 = Debug|Any CPU
+		{026CA24B-9C13-40B0-AF73-EB4721DF5B7D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{026CA24B-9C13-40B0-AF73-EB4721DF5B7D}.Debug|x86.Build.0 = Debug|Any CPU
+		{026CA24B-9C13-40B0-AF73-EB4721DF5B7D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{026CA24B-9C13-40B0-AF73-EB4721DF5B7D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{026CA24B-9C13-40B0-AF73-EB4721DF5B7D}.Release|ARM.ActiveCfg = Release|Any CPU
+		{026CA24B-9C13-40B0-AF73-EB4721DF5B7D}.Release|ARM.Build.0 = Release|Any CPU
+		{026CA24B-9C13-40B0-AF73-EB4721DF5B7D}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{026CA24B-9C13-40B0-AF73-EB4721DF5B7D}.Release|ARM64.Build.0 = Release|Any CPU
+		{026CA24B-9C13-40B0-AF73-EB4721DF5B7D}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{026CA24B-9C13-40B0-AF73-EB4721DF5B7D}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{026CA24B-9C13-40B0-AF73-EB4721DF5B7D}.Release|x64.ActiveCfg = Release|Any CPU
+		{026CA24B-9C13-40B0-AF73-EB4721DF5B7D}.Release|x64.Build.0 = Release|Any CPU
+		{026CA24B-9C13-40B0-AF73-EB4721DF5B7D}.Release|x86.ActiveCfg = Release|Any CPU
+		{026CA24B-9C13-40B0-AF73-EB4721DF5B7D}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

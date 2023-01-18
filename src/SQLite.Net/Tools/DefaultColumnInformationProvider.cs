@@ -2,17 +2,49 @@
 using System.Linq;
 using System.Reflection;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace SQLite.Net2
 {
 	public class DefaultColumnInformationProvider : IColumnInformationProvider
 	{
-		#region IColumnInformationProvider implementation
+		private static Type GetMemberTypeInternal(MemberInfo m)
+		{
+			return m switch
+			{
+				PropertyInfo p => p.PropertyType,
+				FieldInfo f => f.FieldType,
+				_ => throw new NotSupportedException($"{m.GetType()} is not supported.")
+			};
+		}
+		
+		public static string GetTupleElementName(Type containedType, MemberInfo member, int tupleElementIndex)
+		{
+			var elementNames = member.GetCustomAttribute<TupleElementNamesAttribute>();
+			if (elementNames is not null) return elementNames.TransformNames[tupleElementIndex];
+			
+			var memberType = GetMemberTypeInternal(member);
+			var declaringType = member.DeclaringType;
+			if (declaringType.IsGenericType && declaringType.GetGenericArguments().Contains(memberType))
+			{
+				elementNames = containedType.GetCustomAttribute<TupleElementNamesAttribute>();
+			}
 
-		public string GetColumnName(MemberInfo p)
+			return elementNames?.TransformNames?[tupleElementIndex] ?? $"Item{tupleElementIndex + 1}";
+		}
+		
+		#region IColumnInformationProvider implementation
+		
+		public string GetColumnName(Type containedType, MemberInfo p, int tupleElementIndex)
 		{
 			var colAttr = p.GetCustomAttributes<ColumnAttribute>(true).FirstOrDefault();
-			return colAttr == null ? p.Name : colAttr.Name;
+			var name = colAttr == null ? p.Name : colAttr.Name;
+			if (tupleElementIndex >= 0)
+			{
+				name += "_" + GetTupleElementName(containedType, p, tupleElementIndex);
+			}
+
+			return name;
 		}
 
 		public bool IsIgnored(MemberInfo p)

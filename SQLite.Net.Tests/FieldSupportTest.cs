@@ -27,6 +27,16 @@ namespace SQLite.Net2.Tests
             Assert.That(shouldNotBeSet2, Is.EqualTo(-2));
         }
     }
+
+    public class FieldTestModelWithPkProperty
+    {
+        [PrimaryKey]
+        public int Id { get; set; }
+
+        public string Name { get; set; }
+        
+        public int value;
+    }
     
     [TestFixture]
     public class FieldSupportTest : BaseTest
@@ -41,7 +51,27 @@ namespace SQLite.Net2.Tests
                 nameof(FieldTestModel.Role)
             };
             
-            var members = ReflectionService.GetPublicInstanceProperties(typeof(FieldTestModel)).ToList();
+            var members = ReflectionService.GetPublicInstanceProperties(typeof(FieldTestModel), new DefaultColumnInformationProvider()).ToList();
+            
+            Assert.That(members.Count, Is.EqualTo(fieldNames.Length));
+            for (var i = 0; i < fieldNames.Length; ++i)
+            {
+                Assert.That(members[i].Name, Is.EqualTo(fieldNames[i]));
+            }
+        }
+        
+        [Test]
+        public void PkPropertyBeforeFieldBeforePropertyOrdering()
+        {
+            string[] fieldNames = {
+                nameof(FieldTestModelWithPkProperty.Id),
+                nameof(FieldTestModelWithPkProperty.value),
+                nameof(FieldTestModelWithPkProperty.Name),
+            };
+
+            var columnInformationProvider = new DefaultColumnInformationProvider();
+            
+            var members = ReflectionService.GetPublicInstanceProperties(typeof(FieldTestModelWithPkProperty), columnInformationProvider).ToList();
             
             Assert.That(members.Count, Is.EqualTo(fieldNames.Length));
             for (var i = 0; i < fieldNames.Length; ++i)

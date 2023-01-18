@@ -33,7 +33,7 @@ namespace SQLite.Net2
         /// Returns the set of public non-static non-initonly fields followed by the public non-static properties with
         /// public get and set methods.
         /// </summary>
-        public static IEnumerable<MemberInfo> GetPublicInstanceProperties(Type mappedType)
+        public static IEnumerable<MemberInfo> GetPublicInstanceProperties(Type mappedType, IColumnInformationProvider provider)
         {
             var properties = mappedType.GetTypeInfo().GetRuntimeProperties()
                 .Where(p => p.CanRead && p.CanWrite && p.GetMethod.IsPublic && p.SetMethod.IsPublic &&
@@ -41,7 +41,37 @@ namespace SQLite.Net2
             var fields = mappedType.GetTypeInfo().GetRuntimeFields()
                 .Where(f => f.IsPublic && !f.IsStatic && !f.IsInitOnly);
 
-            return fields.Union<MemberInfo>(properties).ToList();
+            var members = fields
+                .Union<MemberInfo>(properties).ToList();
+            members.Sort((l, r) =>
+            {
+                var lPk = provider.IsPK(l);
+                var rPk = provider.IsPK(r);
+
+                switch (lPk)
+                {
+                    case true when !rPk:
+                        return -1;
+                    case false when rPk:
+                        return 1;
+                    default:
+                    {
+                        if (l is FieldInfo && r is not FieldInfo)
+                        {
+                            return -1;
+                        }
+
+                        if (r is FieldInfo && l is not FieldInfo)
+                        {
+                            return 1;
+                        }
+
+                        return StringComparer.InvariantCulture.Compare(l.Name, r.Name);
+                    }
+                }
+            });
+            
+            return members;
         }
 
         public static object GetMemberValue(object obj, Expression expr, MemberInfo member)

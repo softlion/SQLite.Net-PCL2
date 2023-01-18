@@ -28,7 +28,7 @@ namespace SQLite.Net2.Tests
 
 		public class TestColumnInformationProvider : IColumnInformationProvider
 		{
-			public string GetColumnName(MemberInfo p)
+			public string GetColumnName(Type containedType, MemberInfo p, int tupleElementIndex)
 			{
 				var colAttr = p.GetCustomAttributes<ColumnAttribute>(true).FirstOrDefault();
 				return colAttr == null ? p.Name : colAttr.Name;

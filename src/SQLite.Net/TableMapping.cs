@@ -64,7 +64,6 @@ namespace SQLite.Net2
                 if (memberType.GetInterface(nameof(ITuple)) != null && memberType.IsValueType)
                 {
                     // If it is, create a column per member of the value tuple.
-                    var names = p.GetCustomAttribute<TupleElementNamesAttribute>();
                     var args = memberType.GetGenericArguments();
                     for (var i = 0; i < args.Length; ++i)
                     {
@@ -75,17 +74,18 @@ namespace SQLite.Net2
                         }
                         
                         cols.Add(new Column(
+                            type,
                             p,
                             createFlags,
                             infoProvider,
                             i,
-                            tupleElementType,
-                            names?.TransformNames[i] ?? $"Item{i + 1}"));
+                            tupleElementType));
                     }
                 }
                 else
                 {
                     cols.Add(new Column(
+                        type,
                         p,
                         createFlags,
                         infoProvider));
@@ -172,19 +172,17 @@ namespace SQLite.Net2
             }
 
             public Column(
+                Type containedType,
                 MemberInfo prop,
                 CreateFlags createFlags,
                 IColumnInformationProvider? infoProvider,
                 int tupleElement = -1,
-                Type? tupleElementType = null,
-                string? tupleElementName = null)
+                Type? tupleElementType = null)
             {
                 _infoProvider = infoProvider ?? new DefaultColumnInformationProvider();
 
                 _prop = prop;
-                Name = tupleElementName == null
-                    ? _infoProvider.GetColumnName(prop)
-                    : $"{_infoProvider.GetColumnName(prop)}_{tupleElementName}";
+                Name = _infoProvider.GetColumnName(containedType, prop, tupleElement);
 
                 var columnType = tupleElementType ?? _infoProvider.GetMemberType(prop);
                 //If this type is Nullable<T> then Nullable.GetUnderlyingType returns the T, otherwise it returns null, so get the actual type instead
@@ -214,7 +212,6 @@ namespace SQLite.Net2
                 IsNullable = !(IsPK || Orm.IsMarkedNotNull(prop));
                 MaxStringLength = Orm.MaxStringLength(prop);
                 TupleElement = tupleElement;
-                TupleElementName = tupleElementName;
             }
 
 
@@ -230,7 +227,6 @@ namespace SQLite.Net2
             public int? MaxStringLength { get; }
             public object DefaultValue { get; }
             public int TupleElement { get; }
-            public string? TupleElementName { get; }
 
             /// <summary>
             ///     Set column value.

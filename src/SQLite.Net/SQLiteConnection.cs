@@ -171,7 +171,7 @@ namespace SQLite.Net2
 
 		public IColumnInformationProvider ColumnInformationProvider 
 		{
-			get => _columnInformationProvider;
+			get => _columnInformationProvider ??= new DefaultColumnInformationProvider();
             set
 			{
 				_columnInformationProvider = value;
@@ -239,7 +239,7 @@ namespace SQLite.Net2
 
         private TableMapping CreateAndSetMapping(Type type, CreateFlags createFlags, IDictionary<string, TableMapping> mapTable)
         {
-            var props = ReflectionService.GetPublicInstanceProperties(type);
+            var props = ReflectionService.GetPublicInstanceProperties(type, ColumnInformationProvider);
 			var map = new TableMapping(type, props, createFlags, _columnInformationProvider);
             mapTable[type.FullName] = map;
             return map;

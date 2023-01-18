@@ -14,7 +14,7 @@ namespace SQLite.Net2
 		object GetDefaultValue(MemberInfo p);
 		bool IsMarkedNotNull(MemberInfo p);
 		bool IsIgnored(MemberInfo p);
-		string GetColumnName(MemberInfo p);
+		string GetColumnName(Type containedType, MemberInfo p, int tupleElementIndex);
 		Type GetMemberType(MemberInfo m);
 		object GetValue(MemberInfo m, object obj);
 	}

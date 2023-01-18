@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using NUnit.Framework;
+using SQLite.Net2.Tests.Deps;
 
 namespace SQLite.Net2.Tests
 {
@@ -9,6 +10,15 @@ namespace SQLite.Net2.Tests
         public ValueTuple<int, string> Value { get; set; }
         
         public bool HasReadEula { get; set; }
+    }
+
+    public class TestGenericBaseWithValue<T>
+    {
+        public T Value;
+    }
+
+    public class TestDerivedWithGenericBase : Model<(int userId, string userName)>
+    {
     }
     
     public class TestModelWithNamedValueTuple
@@ -32,15 +42,21 @@ namespace SQLite.Net2.Tests
             var db = new SQLiteConnection(TestPath.CreateTemporaryDatabase());
             var mapping1 = db.GetMapping<TestModelWithValueTuple>();
             Assert.That(mapping1.Columns.Length, Is.EqualTo(3));
-            Assert.That(mapping1.Columns[0].Name, Is.EqualTo($"{nameof(TestModelWithValueTuple.Value)}_{nameof(TestModelWithValueTuple.Value.Item1)}"));
-            Assert.That(mapping1.Columns[1].Name, Is.EqualTo($"{nameof(TestModelWithValueTuple.Value)}_{nameof(TestModelWithValueTuple.Value.Item2)}"));
-            Assert.That(mapping1.Columns[2].Name, Is.EqualTo($"{nameof(TestModelWithValueTuple.HasReadEula)}"));
+            Assert.That(mapping1.Columns[0].Name, Is.EqualTo($"{nameof(TestModelWithValueTuple.HasReadEula)}"));
+            Assert.That(mapping1.Columns[1].Name, Is.EqualTo($"{nameof(TestModelWithValueTuple.Value)}_{nameof(TestModelWithValueTuple.Value.Item1)}"));
+            Assert.That(mapping1.Columns[2].Name, Is.EqualTo($"{nameof(TestModelWithValueTuple.Value)}_{nameof(TestModelWithValueTuple.Value.Item2)}"));
+            
             
             var mapping2 = db.GetMapping<TestModelWithNamedValueTuple>();
             Assert.That(mapping2.Columns.Length, Is.EqualTo(3));
-            Assert.That(mapping2.Columns[0].Name, Is.EqualTo($"{nameof(TestModelWithValueTuple.Value)}_{nameof(TestModelWithNamedValueTuple.Value.userId)}"));
-            Assert.That(mapping2.Columns[1].Name, Is.EqualTo($"{nameof(TestModelWithValueTuple.Value)}_{nameof(TestModelWithNamedValueTuple.Value.userName)}"));
-            Assert.That(mapping2.Columns[2].Name, Is.EqualTo($"{nameof(TestModelWithValueTuple.HasReadEula)}"));
+            Assert.That(mapping2.Columns[0].Name, Is.EqualTo($"{nameof(TestModelWithValueTuple.HasReadEula)}"));
+            Assert.That(mapping2.Columns[1].Name, Is.EqualTo($"{nameof(TestModelWithValueTuple.Value)}_{nameof(TestModelWithNamedValueTuple.Value.userId)}"));
+            Assert.That(mapping2.Columns[2].Name, Is.EqualTo($"{nameof(TestModelWithValueTuple.Value)}_{nameof(TestModelWithNamedValueTuple.Value.userName)}"));
+
+            var mapping3 = db.GetMapping<TestDerivedWithGenericBase>();
+            Assert.That(mapping3.Columns.Length, Is.EqualTo(2));
+            Assert.That(mapping3.Columns[0].Name, Is.EqualTo($"{nameof(TestDerivedWithGenericBase.Key)}_{nameof(TestDerivedWithGenericBase.Key.userId)}"));
+            Assert.That(mapping3.Columns[1].Name, Is.EqualTo($"{nameof(TestDerivedWithGenericBase.Key)}_{nameof(TestDerivedWithGenericBase.Key.userName)}"));
         }
 
         [Test]

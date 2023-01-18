@@ -23,6 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\SQLite.Net2.Tests.Deps\SQLite.Net2.Tests.Deps.csproj" />
     <ProjectReference Include="..\src\SQLite.Net\SQLite.Net2.csproj" />
   </ItemGroup>
 
