@@ -12,11 +12,6 @@ namespace SQLite.Net2.Tests
         public bool HasReadEula { get; set; }
     }
 
-    public class TestGenericBaseWithValue<T>
-    {
-        public T Value;
-    }
-
     public class TestDerivedWithGenericBase : Model<(int userId, string userName)>
     {
     }
@@ -93,6 +88,29 @@ namespace SQLite.Net2.Tests
             Assert.That(allEntriesDescending.Count, Is.EqualTo(2));
             Assert.That(allEntriesDescending[0].Value.Item1, Is.EqualTo(2));
             Assert.That(allEntriesDescending[1].Value.Item1, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void CanAccessNamedTupleElementsNotInLocalAssembly()
+        {
+            var db = new SQLiteConnection(TestPath.CreateTemporaryDatabase());
+            db.CreateTable<TestDerivedWithGenericBase>();
+
+            db.InsertAll(new[]
+            {
+                new TestDerivedWithGenericBase
+                {
+                    Key = (1, "test.1")
+                },
+                new TestDerivedWithGenericBase
+                {
+                    Key = (2, "test.2")
+                },
+            });
+
+            var items = db.Table<TestDerivedWithGenericBase>().Where(x => x.Key.userName == "test.1" && x.Key.userId == 1).ToArray();
+            Assert.That(items.Length, Is.EqualTo(1));
+            Assert.That(items[0].Key, Is.EqualTo((1, "test.1")));
         }
         
         [Test]

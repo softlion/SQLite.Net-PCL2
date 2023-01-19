@@ -32,6 +32,9 @@ namespace SQLite.Net2
         /// <summary>
         /// Returns the set of public non-static non-initonly fields followed by the public non-static properties with
         /// public get and set methods.
+        ///
+        /// The ordering of the returned members is as follows:
+        /// First by if it's a primary key or not, then by if it's a field or a property, and finally alphabetically.
         /// </summary>
         public static IEnumerable<MemberInfo> GetPublicInstanceProperties(Type mappedType, IColumnInformationProvider provider)
         {

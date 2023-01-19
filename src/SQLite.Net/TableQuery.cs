@@ -360,27 +360,28 @@ namespace SQLite.Net2
                 return columnName;
             }
             // Not a direct member expression, must be a nested one.
-
+            
             // This only supports a single level of nesting. That is  x => x.Key.item is allowed
             // but x => x.Key.item.value is not allowed.
 
             // Given x => x.A.B this gets A
-            var parentProperty = (MemberExpression)mem.Expression;
+            var parentProperty = (MemberExpression)mem.Expression!;
             var memberName = mem.Member.Name;
 
-            // if A is a ValueTuple with element names, this will retrieve the names for use in determining the
-            // column names.
-            var names = parentProperty.Member.GetCustomAttribute<TupleElementNamesAttribute>();
-            if (names != null)
+            if (memberName.StartsWith("Item"))
             {
+                // if A is a ValueTuple with element names, this will retrieve the names for use in determining the
+                // column names.
                 var index = int.Parse(memberName.Substring(4)) - 1;
-                memberName = names.TransformNames[index];
+                memberName = DefaultColumnInformationProvider.GetTupleElementName(typeof(T), parentProperty.Member, index);
+                
+                // Compose the parent name (A) with the child name to get the column name.
+                // A_B
+                var name = parentProperty.Member.Name + "_" + memberName;
+                return name;
             }
 
-            // Compose the parent name (A) with the child name to get the column name.
-            // A_B
-            var name = parentProperty.Member.Name + "_" + memberName;
-            return name;
+            throw new InvalidOperationException("Expected member to be an item of a tuple.");
         }
 
         private CompileResult CompileExpr( Expression expr, List<object> queryArgs)

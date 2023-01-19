@@ -30,14 +30,13 @@ namespace SQLite.Net2.Tests
 
     public class FieldTestModelWithPkProperty
     {
+        public int value;
+        public string Name { get; set; }
+        public string quote;
         [PrimaryKey]
         public int Id { get; set; }
-
-        public string Name { get; set; }
-        
-        public int value;
     }
-    
+
     [TestFixture]
     public class FieldSupportTest : BaseTest
     {
@@ -65,6 +64,7 @@ namespace SQLite.Net2.Tests
         {
             string[] fieldNames = {
                 nameof(FieldTestModelWithPkProperty.Id),
+                nameof(FieldTestModelWithPkProperty.quote),
                 nameof(FieldTestModelWithPkProperty.value),
                 nameof(FieldTestModelWithPkProperty.Name),
             };
