@@ -295,6 +295,42 @@ namespace SQLite.Net2
 
         #endregion
 
+        #region Serialize
+
+        public byte[] Serialize(IDbHandle db, string schema)
+        {
+            var internalDbHandle = (DbHandle)db;
+            return raw.sqlite3_serialize(internalDbHandle.DbPtr, schema);
+        }
+
+        public long Serialize(IDbHandle db, string schema, System.IO.Stream stream)
+        {
+            var internalDbHandle = (DbHandle)db;
+            return raw.sqlite3_serialize(internalDbHandle.DbPtr, schema, stream);
+        }
+
+        public void Deserialize(IDbHandle db, string schema, byte[] data)
+        {
+            var internalDbHandle = (DbHandle)db;
+            var r = (Result)raw.sqlite3_deserialize(internalDbHandle.DbPtr, schema, data);
+            if (r != Result.OK)
+            {
+                throw new SQLiteException(r, Errmsg16(internalDbHandle));
+            }
+        }
+
+        public void Deserialize(IDbHandle db, string schema, System.IO.Stream stream)
+        {
+            var internalDbHandle = (DbHandle)db;
+            var r = (Result)raw.sqlite3_deserialize(internalDbHandle.DbPtr, schema, stream);
+            if (r != Result.OK)
+            {
+                throw new SQLiteException(r, Errmsg16(internalDbHandle));
+            }
+        }
+
+        #endregion
+
         private class DbHandle : IDbHandle
         {
             public sqlite3 DbPtr { get; private set; }

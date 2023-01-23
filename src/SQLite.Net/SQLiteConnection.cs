@@ -1802,6 +1802,30 @@ namespace SQLite.Net2
 
         #endregion
 
+        #region Serialize
+
+        public byte[] Serialize(string databaseName = "main")
+        {
+            return sqlite.Serialize(Handle, databaseName);
+        }
+
+        public long Serialize(System.IO.Stream stream, string databaseName = "main")
+        {
+            return sqlite.Serialize(Handle, databaseName, stream);
+        }
+
+        public void Deserialize(byte[] dbData, string databaseName = "main")
+        {
+            sqlite.Deserialize(Handle, databaseName, dbData);
+        }
+
+        public void Deserialize(System.IO.Stream stream, string databaseName = "main")
+        {
+            sqlite.Deserialize(Handle, databaseName, stream);
+        }
+
+        #endregion
+
         ~SQLiteConnection()
         {
             Dispose(false);
