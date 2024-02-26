@@ -14,10 +14,9 @@
 
   <!--  nuget configurable properties -->
   <PropertyGroup>
-    <Version>2.0.6</Version>
+    <Version>2.1.0</Version>
     <VersionSuffix></VersionSuffix>
     <DefineConstants>$(DefineConstants);</DefineConstants>
-    <NugetPackageId></NugetPackageId>
   </PropertyGroup>
 
 
