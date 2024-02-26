@@ -50,6 +50,9 @@ namespace SQLite.Net2.Tests
             db.InsertAll(cq);
 
             TableQuery<TestObjInt> results = db.Table<TestObjInt>().Where(o => o.Data + 10 >= n);
+
+            // Assert.That(results.Count(), Is.EqualTo(11));
+            // Assert.That(results.OrderBy(o => o.Data).FirstOrDefault().Data, Is.EqualTo(10));
             Assert.AreEqual(results.Count(), 11);
             Assert.AreEqual(results.OrderBy(o => o.Data).FirstOrDefault().Data, 10);
         }

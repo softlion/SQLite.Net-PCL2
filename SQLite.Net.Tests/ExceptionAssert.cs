@@ -16,7 +16,7 @@ namespace SQLite.Net2.Tests
                 return ex;
             }
 
-            Assert.Fail("Expected exception of type {0}.", typeof (T));
+            Assert.Fail($"Expected exception of type {typeof (T)}.");
 
             return null;
         }

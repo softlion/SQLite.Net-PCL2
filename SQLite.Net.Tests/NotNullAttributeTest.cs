@@ -215,9 +215,7 @@ namespace SQLite.Net2.Tests
                     }
                     catch (Exception ex)
                     {
-                        Assert.Fail(
-                            "Expected an exception of type NotNullConstraintViolationException to be thrown. An exception of type {0} was thrown instead.",
-                            ex.GetType().Name);
+                        Assert.Fail($"Expected an exception of type NotNullConstraintViolationException to be thrown. An exception of type {ex.GetType().Name} was thrown instead.");
                     }
                     Assert.Fail("Expected an exception of type NotNullConstraintViolationException to be thrown. No exception was thrown.");
                 }
@@ -252,9 +250,7 @@ namespace SQLite.Net2.Tests
                     }
                     catch (Exception ex)
                     {
-                        Assert.Fail(
-                            "Expected an exception of type NotNullConstraintViolationException to be thrown. An exception of type {0} was thrown instead.",
-                            ex.GetType().Name);
+                        Assert.Fail($"Expected an exception of type NotNullConstraintViolationException to be thrown. An exception of type {ex.GetType().Name} was thrown instead.");
                     }
                 }
                 Assert.Fail("Expected an exception of type NotNullConstraintViolationException to be thrown. No exception was thrown.");
@@ -291,7 +287,7 @@ namespace SQLite.Net2.Tests
                 }
                 catch (Exception ex)
                 {
-                    Assert.Fail("Expected an exception of type NotNullConstraintViolationException to be thrown. An exception of type {0} was thrown instead.", ex.GetType().Name);
+                    Assert.Fail($"Expected an exception of type NotNullConstraintViolationException to be thrown. An exception of type {ex.GetType().Name} was thrown instead.");
                 }
                 Assert.Fail("Expected an exception of type NotNullConstraintViolationException to be thrown. No exception was thrown.");
             }

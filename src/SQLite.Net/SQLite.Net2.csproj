@@ -1,13 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.1;net8.0</TargetFrameworks>
     <AssemblyName>SQLite.Net2</AssemblyName>
     <RootNamespace>SQLite.Net2</RootNamespace>
 
     <DebugType>portable</DebugType>
     <AssemblyProduct>SQLite.Net2</AssemblyProduct>
-    <AssemblyCopyright>Copyright ©2022 Benjamin Mayrargue</AssemblyCopyright>
+    <AssemblyCopyright>Copyright ©2024 Benjamin Mayrargue</AssemblyCopyright>
     <LangVersion>Latest</LangVersion>
     <Nullable>enable</Nullable>
   </PropertyGroup>
@@ -47,7 +47,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="SQLitePCLRaw.core" Version="2.0.7" />
+    <PackageReference Include="SQLitePCLRaw.core" Version="2.1.8" />
     <None Include="..\..\LICENSE.md" Pack="true" PackagePath="" />
   </ItemGroup>
 
