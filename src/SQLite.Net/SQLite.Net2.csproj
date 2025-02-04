@@ -1,20 +1,20 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.1;net8.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.1;net8.0;net9.0</TargetFrameworks>
     <AssemblyName>SQLite.Net2</AssemblyName>
     <RootNamespace>SQLite.Net2</RootNamespace>
 
     <DebugType>portable</DebugType>
     <AssemblyProduct>SQLite.Net2</AssemblyProduct>
-    <AssemblyCopyright>Copyright ©2024 Benjamin Mayrargue</AssemblyCopyright>
+    <AssemblyCopyright>Copyright ©2025 Benjamin Mayrargue</AssemblyCopyright>
     <LangVersion>Latest</LangVersion>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <!--  nuget configurable properties -->
   <PropertyGroup>
-    <Version>2.1.0</Version>
+    <Version>2.2.0</Version>
     <VersionSuffix></VersionSuffix>
     <DefineConstants>$(DefineConstants);</DefineConstants>
   </PropertyGroup>
@@ -25,8 +25,8 @@
     <PackageId>sqlite-net2</PackageId>
     <!-- PackageIcon>icon.png</PackageIcon -->
     <!--<PackageIconUrl>https://raw.githubusercontent.com/xamarin/Essentials/master/Assets/xamarin.essentials_128x128.png</PackageIconUrl>-->
-    <Summary>A netstandard client library to access SQLite database files in a LINQ manner.</Summary>
-    <PackageTags>sqlite, xamarin, android, ios, uwp, netstandard</PackageTags>
+    <Summary>A client library to access SQLite database files in a LINQ manner.</Summary>
+    <PackageTags>sqlite, maui, android, ios, windows</PackageTags>
     <Title>sqlite-net2 light ORM for SQLite</Title>
     <Description>sqlite-net2 allows applications to manage data in SQLite databases using Entity Framework like queries, but much lighter</Description>
     <Product>$(AssemblyName) ($(TargetFramework))</Product>
@@ -46,7 +46,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="SQLitePCLRaw.core" Version="2.1.8" />
+    <PackageReference Include="SQLitePCLRaw.core" Version="2.1.10" />
     <None Include="..\..\LICENSE.md" Pack="true" PackagePath="" />
   </ItemGroup>
 
