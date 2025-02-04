@@ -1,0 +1,48 @@
+name: Publish To Nuget
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    
+jobs:
+  build:
+    name: Build
+    runs-on: windows-latest
+    environment: Default
+    env:
+      NUPKG_MAJOR: 2.2.0
+      DOTNET_CLI_TELEMETRY_OPTOUT: true
+      DOTNET_NOLOGO: true
+      PROJECT: src\SQLite.Net\SQLite.Net2.csproj
+
+    steps:
+      - uses: actions/checkout@v4
+        
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+          
+      - name: Build
+        shell: pwsh
+        run: dotnet build -c Release $env:PROJECT
+        
+      - name: Package NuGets
+        shell: pwsh
+        env:
+          #required so if it contains special characters they are not interpreted by powershell
+          NUGET_AUTH_TOKEN: ${{secrets.NUGETAPIKEY}}
+          NUGET_TARGET: https://api.nuget.org/v3/index.json
+        run: |
+          $VERSION="$env:NUPKG_MAJOR-ci$env:GITHUB_RUN_ID"
+          if ($env:GITHUB_EVENT_NAME -eq "release") {
+            $VERSION = $env:GITHUB_REF.Substring($env:GITHUB_REF.LastIndexOf('/') + 1)
+          }
+          echo "PACKAGE VERSION: $VERSION"
+          New-Item -ItemType Directory -Force -Path .\artifacts
+          
+          dotnet pack --no-build --output ./artifacts -c Release -p:PackageVersion=$VERSION $env:PROJECT
+          # needs to CD because nuget push can't find nuget packages with a linux style path
+          cd ./artifacts
+          dotnet nuget push *.nupkg --skip-duplicate -k $env:NUGET_AUTH_TOKEN -s $env:NUGET_TARGET
