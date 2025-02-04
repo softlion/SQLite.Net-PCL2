@@ -11,7 +11,7 @@
     <LangVersion>Latest</LangVersion>
     <Nullable>enable</Nullable>
 
-    <IsAotCompatible>true</IsAotCompatible>
+    <IsAotCompatible Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net9.0'))">true</IsAotCompatible>
   </PropertyGroup>
 
   <!--  nuget configurable properties -->
