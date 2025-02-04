@@ -11,7 +11,7 @@
     <LangVersion>Latest</LangVersion>
     <Nullable>enable</Nullable>
 
-    <IsTrimmable>true</IsTrimmable>
+    <IsAotCompatible>true</IsAotCompatible>
   </PropertyGroup>
 
   <!--  nuget configurable properties -->
