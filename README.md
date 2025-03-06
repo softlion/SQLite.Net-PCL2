@@ -1,3 +1,7 @@
+# About
+
+SQLite client and ORM. Simple, powerful, cross-platform - Simplified and fixed version
+
 # Setup
 
 Add this package to a netstandard compatible project:
